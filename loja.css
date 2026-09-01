@@ -1613,3 +1613,81 @@ body::before {
     box-shadow:
         0 8px 25px rgba(139, 92, 246, 0.35);
 }
+/* ================================
+   FUNDO ESPACIAL ANIMADO
+   ================================ */
+
+body::before,
+body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+
+    background-image:
+        radial-gradient(circle, rgba(255,255,255,0.65) 1px, transparent 1px),
+        radial-gradient(circle, rgba(139,92,246,0.45) 1px, transparent 1px);
+
+    background-size: 140px 140px, 220px 220px;
+    background-position: 0 0, 70px 100px;
+
+    animation: estrelas 35s linear infinite;
+}
+
+body::after {
+    opacity: 0.45;
+    background-size: 190px 190px, 280px 280px;
+    animation-duration: 55s;
+    animation-direction: reverse;
+}
+
+@keyframes estrelas {
+    from {
+        transform: translate(0, 0);
+    }
+
+    to {
+        transform: translate(-140px, -140px);
+    }
+}
+
+/* ESTRELAS */
+
+.stars {
+    position: fixed;
+    inset: 0;
+
+    pointer-events: none;
+
+    z-index: 0;
+
+    background-image:
+        radial-gradient(circle, rgba(255,255,255,0.8) 1px, transparent 1px),
+        radial-gradient(circle, rgba(255,255,255,0.5) 1px, transparent 1px);
+
+    background-size: 120px 120px, 180px 180px;
+
+    background-position: 0 0, 60px 80px;
+
+    opacity: 0.35;
+}
+
+body::after {
+    opacity: 0.55;
+
+    background-size: 130px 130px, 200px 200px;
+
+    animation-duration: 55s;
+    animation-direction: reverse;
+}
+
+@keyframes estrelas {
+    from {
+        transform: translate(0, 0);
+    }
+
+    to {
+        transform: translate(-140px, -140px);
+    }
+}
