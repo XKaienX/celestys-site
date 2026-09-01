@@ -92,23 +92,24 @@
 
     </div>
 
-
     <div class="status-card discord-status">
 
-        <div class="status-icon">💬</div>
+    <div class="status-icon">💬</div>
 
-        <div class="status-info">
-            <h3>Servidor do Discord</h3>
-            <p>29 membros online</p>
-            <a href="https://discord.gg/mN4uJtEsyp"
-               target="_blank">
-                Entrar no Discord →
-            </a>
-        </div>
+    <div class="status-info">
+        <h3>Servidor do Discord</h3>
 
+        <p>
+            <span id="discord-online">Carregando...</span> membros online
+        </p>
+
+        <a href="https://discord.gg/mN4uJtEsyp"
+           target="_blank">
+            Entrar no Discord →
+        </a>
     </div>
 
-</section>
+</div>
 
     <section class="about" id="sobre">
 
@@ -469,15 +470,47 @@ async function atualizarMinecraft() {
     }
 }
 
-
 // Atualiza assim que a página abrir
 atualizarMinecraft();
 
 
 // Atualiza novamente a cada 60 segundos
 setInterval(atualizarMinecraft, 60000);
+
 </script>
 
+<script>
+    async function atualizarDiscord() {
+        const contador = document.getElementById("discord-online");
+
+        try {
+            const resposta = await fetch(
+                "https://celestys-discord.yuri-nobre-guerreiro.workers.dev/discord"
+            );
+
+            if (!resposta.ok) {
+                throw new Error("Erro na API");
+            }
+
+            const dados = await resposta.json();
+
+            if (typeof dados.online === "number") {
+                contador.textContent = dados.online;
+            } else {
+                contador.textContent = "Indisponível";
+            }
+
+        } catch (erro) {
+            console.error("Erro ao buscar Discord:", erro);
+            contador.textContent = "Indisponível";
+        }
+    }
+
+    atualizarDiscord();
+
+    // Atualiza a cada 60 segundos
+    setInterval(atualizarDiscord, 60000);
+</script>
 
 <body>
 
