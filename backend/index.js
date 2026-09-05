@@ -279,10 +279,12 @@ app.post("/criar-pagamento", async (req, res) => {
         }
 
         // ========================================
-        // TRANSFORMAR PRODUTOS DO CARRINHO
-        // ========================================
+// TRANSFORMAR PRODUTOS DO CARRINHO
+// ========================================
 
-        const items = produtos.map((produto) => {
+const itensPedido = [];
+
+const items = produtos.map((produto) => {
 
     if (!produto || typeof produto !== "object") {
         throw new Error("Produto inválido.");
@@ -295,14 +297,15 @@ app.post("/criar-pagamento", async (req, res) => {
     }
 
     // ========================================
-    // PRODUTOS COM QUANTIDADE
+    // CHUNK LOADER
     // ========================================
 
-    // Chunk Loader
     if (nomeRecebido.startsWith("Chunk Loader - ")) {
 
         const quantidade = parseInt(
-            nomeRecebido.replace("Chunk Loader - ", "").replace("x", ""),
+            nomeRecebido
+                .replace("Chunk Loader - ", "")
+                .replace("x", ""),
             10
         );
 
@@ -310,17 +313,28 @@ app.post("/criar-pagamento", async (req, res) => {
             throw new Error("Quantidade de Chunk Loader inválida.");
         }
 
-        const precoTotal = quantidade * 15;
+        const valorUnitario = 15;
+        const valorTotal = quantidade * valorUnitario;
+
+        itensPedido.push({
+            produto_nome: "Chunk Loader",
+            quantidade: quantidade,
+            valor_unitario: valorUnitario,
+            valor_total: Number(valorTotal.toFixed(2))
+        });
 
         return {
             title: `Chunk Loader - ${quantidade}x`,
             quantity: 1,
-            unit_price: Number(precoTotal.toFixed(2)),
+            unit_price: Number(valorTotal.toFixed(2)),
             currency_id: "BRL"
         };
     }
 
-    // Aumento de Terreno
+    // ========================================
+    // AUMENTO DE TERRENO
+    // ========================================
+
     if (nomeRecebido.startsWith("Aumento de Terreno - ")) {
 
         const quantidade = parseInt(
@@ -338,12 +352,20 @@ app.post("/criar-pagamento", async (req, res) => {
             throw new Error("Quantidade de terreno inválida.");
         }
 
-        const precoTotal = (quantidade / 10) * 5;
+        const valorUnitario = 0.50;
+        const valorTotal = quantidade * valorUnitario;
+
+        itensPedido.push({
+            produto_nome: "Aumento de Terreno",
+            quantidade: quantidade,
+            valor_unitario: valorUnitario,
+            valor_total: Number(valorTotal.toFixed(2))
+        });
 
         return {
             title: `Aumento de Terreno - ${quantidade} unidades`,
             quantity: 1,
-            unit_price: Number(precoTotal.toFixed(2)),
+            unit_price: Number(valorTotal.toFixed(2)),
             currency_id: "BRL"
         };
     }
@@ -354,8 +376,6 @@ app.post("/criar-pagamento", async (req, res) => {
 
     let nomeBase = nomeRecebido;
 
-    // Remove quantidade de chaves, por exemplo:
-    // "Chave de Paradox - 3x"
     const quantidadeMatch = nomeRecebido.match(/^(.*) - (\d+)x$/);
 
     let quantidade = 1;
@@ -372,7 +392,9 @@ app.post("/criar-pagamento", async (req, res) => {
     const precoUnitario = CATALOGO[nomeBase];
 
     if (!precoUnitario) {
-        throw new Error(`Produto não encontrado no catálogo: ${nomeBase}`);
+        throw new Error(
+            `Produto não encontrado no catálogo: ${nomeBase}`
+        );
     }
 
     // ========================================
@@ -385,29 +407,46 @@ app.post("/criar-pagamento", async (req, res) => {
     ) {
 
         if (quantidade % 5 !== 0) {
-            throw new Error("A quantidade deve ser múltipla de 5.");
+            throw new Error(
+                "A quantidade deve ser múltipla de 5."
+            );
         }
 
-        const precoTotal = precoUnitario * (quantidade / 5);
+        const quantidadePacotes = quantidade / 5;
+        const valorTotal = precoUnitario * quantidadePacotes;
+
+        itensPedido.push({
+            produto_nome: nomeBase,
+            quantidade: quantidade,
+            valor_unitario: precoUnitario / 5,
+            valor_total: Number(valorTotal.toFixed(2))
+        });
 
         return {
             title: `${nomeBase} - ${quantidade}x`,
             quantity: 1,
-            unit_price: Number(precoTotal.toFixed(2)),
+            unit_price: Number(valorTotal.toFixed(2)),
             currency_id: "BRL"
         };
     }
 
     // ========================================
-    // CHAVES UNITÁRIAS
+    // CHAVES UNITÁRIAS / VIPS
     // ========================================
 
-    const precoTotal = precoUnitario * quantidade;
+    const valorTotal = precoUnitario * quantidade;
+
+    itensPedido.push({
+        produto_nome: nomeBase,
+        quantidade: quantidade,
+        valor_unitario: precoUnitario,
+        valor_total: Number(valorTotal.toFixed(2))
+    });
 
     return {
         title: `${nomeBase} - ${quantidade}x`,
         quantity: 1,
-        unit_price: Number(precoTotal.toFixed(2)),
+        unit_price: Number(valorTotal.toFixed(2)),
         currency_id: "BRL"
     };
 
@@ -440,6 +479,90 @@ app.post("/criar-pagamento", async (req, res) => {
             }
 
         });
+
+        // ========================================
+// SALVAR PEDIDO NO BANCO
+// ========================================
+
+const valorPedido = itensPedido.reduce(
+    (total, item) => total + item.valor_total,
+    0
+);
+
+const pedidoResult = await db.query(
+    `
+    INSERT INTO pedidos (
+        nick,
+        external_reference,
+        preference_id,
+        valor,
+        desconto,
+        valor_final,
+        cupom,
+        status,
+        entrega_status,
+        entregue
+    )
+    VALUES (
+        $1,
+        $2,
+        $3,
+        $4,
+        $5,
+        $6,
+        $7,
+        $8,
+        $9,
+        $10
+    )
+    RETURNING id
+    `,
+    [
+        nickLimpo,
+        referencia,
+        preference.id,
+        Number(valorPedido.toFixed(2)),
+        0,
+        Number(valorPedido.toFixed(2)),
+        null,
+        "pending",
+        "pendente",
+        false
+    ]
+);
+
+const pedidoId = pedidoResult.rows[0].id;
+
+// ========================================
+// SALVAR ITENS DO PEDIDO
+// ========================================
+
+for (const item of itensPedido) {
+
+    await db.query(
+        `
+        INSERT INTO pedido_itens (
+            pedido_id,
+            produto_nome,
+            quantidade,
+            valor_unitario,
+            valor_total
+        )
+        VALUES ($1, $2, $3, $4, $5)
+        `,
+        [
+            pedidoId,
+            item.produto_nome,
+            item.quantidade,
+            item.valor_unitario,
+            item.valor_total
+        ]
+    );
+
+}
+
+console.log("🗄️ Pedido salvo no banco!");
+console.log("🆔 Pedido ID:", pedidoId);
 
         // ========================================
         // LOGS
@@ -617,20 +740,210 @@ try {
         // PAGAMENTO APROVADO
         // ========================================
 
+// ========================================
+// LOCALIZAR PEDIDO NO BANCO
+// ========================================
+
+const referencia = pagamento.external_reference;
+
+if (!referencia) {
+
+    console.error("❌ Pagamento sem referência externa.");
+
+    return res.sendStatus(200);
+}
+
+const pedidoResult = await db.query(
+    `
+    SELECT *
+    FROM pedidos
+    WHERE external_reference = $1
+    LIMIT 1
+    `,
+    [referencia]
+);
+
+if (pedidoResult.rowCount === 0) {
+
+    console.error("❌ Pedido não encontrado no banco.");
+    console.error("🧾 Referência:", referencia);
+
+    return res.sendStatus(200);
+}
+
+const pedido = pedidoResult.rows[0];
+
+// ========================================
+// PROTEGER CONTRA PAGAMENTO DUPLICADO
+// ========================================
+
+if (pedido.payment_id) {
+    if (String(pedido.payment_id) === String(pagamento.id)) {
+        console.log("ℹ️ Pagamento já foi processado anteriormente.");
+        console.log("💳 Payment ID:", pagamento.id);
+        return res.sendStatus(200);
+    }
+
+    console.error("🚨 PEDIDO JÁ POSSUI OUTRO PAYMENT ID!");
+    console.error("🧾 Referência:", referencia);
+    console.error("💳 Payment ID salvo:", pedido.payment_id);
+    console.error("💳 Payment ID recebido:", pagamento.id);
+
+    return res.sendStatus(200);
+}
+
+console.log("✅ Pagamento ainda não foi processado.");
+
+// ========================================
+// VERIFICAR NICK DO PEDIDO
+// ========================================
+
+const nickPagamento = String(
+    pagamento.metadata?.nick || ""
+).trim();
+
+const nickPedido = String(
+    pedido.nick || ""
+).trim();
+
+if (!nickPagamento) {
+    console.error("🚨 PAGAMENTO SEM NICK!");
+    console.error("🧾 Referência:", referencia);
+    return res.sendStatus(200);
+}
+
+if (nickPagamento !== nickPedido) {
+    console.error("🚨 NICK DO PAGAMENTO NÃO CONFERE!");
+    console.error("🧾 Referência:", referencia);
+    console.error("🎮 Nick esperado:", nickPedido);
+    console.error("🎮 Nick recebido:", nickPagamento);
+
+    return res.sendStatus(200);
+}
+
+console.log("✅ Nick do pagamento confirmado!");
+console.log("🎮 Nick:", nickPagamento);
+
+// ========================================
+// VERIFICAR VALOR DO PAGAMENTO
+// ========================================
+
+const valorPago = Number(
+    Number(pagamento.transaction_amount).toFixed(2)
+);
+
+const valorPedido = Number(
+    Number(pedido.valor_final).toFixed(2)
+);
+
+if (valorPago !== valorPedido) {
+
+    console.error("🚨 VALOR DO PAGAMENTO NÃO CONFERE!");
+    console.error("🧾 Referência:", referencia);
+    console.error("💰 Valor esperado:", valorPedido);
+    console.error("💳 Valor recebido:", valorPago);
+
+    return res.sendStatus(200);
+}
+
+console.log("✅ Valor do pagamento confirmado!");
+console.log("💰 Valor:", valorPago);
+
+// ========================================
+// ATUALIZAR STATUS DO PEDIDO
+// ========================================
+
+if (pagamento.status !== "approved") {
+
+    await db.query(
+        `
+        UPDATE pedidos
+        SET
+            payment_id = $1,
+            status = $2,
+            updated_at = NOW()
+        WHERE external_reference = $3
+        `,
+        [
+            String(pagamento.id),
+            String(pagamento.status),
+            referencia
+        ]
+    );
+
+    console.log("🗄️ Status do pedido atualizado!");
+    console.log("🧾 Referência:", referencia);
+    console.log("📊 Status:", pagamento.status);
+
+    return res.sendStatus(200);
+}
+
         if (pagamento.status === "approved") {
 
-            console.log("🎉 PAGAMENTO APROVADO!");
-            console.log("🎮 Nick:", pagamento.metadata?.nick);
+    console.log("🎉 PAGAMENTO APROVADO!");
+    console.log("🎮 Nick:", pagamento.metadata?.nick);
 
-            // ========================================
-            // ENTREGA DOS PRODUTOS
-            // ========================================
-            //
-            // A entrega automática será adicionada
-            // na próxima etapa.
-            //
+    // ========================================
+    // ATUALIZAR PEDIDO NO BANCO
+    // ========================================
+
+    const referencia = pagamento.external_reference;
+
+    if (!referencia) {
+
+        console.error(
+            "❌ Pagamento aprovado sem referência externa."
+        );
+
+    } else {
+
+        const resultadoPedido = await db.query(
+            `
+            UPDATE pedidos
+            SET
+                payment_id = $1,
+                status = $2,
+                entrega_status = $3,
+                entregue = $4,
+                updated_at = NOW()
+            WHERE external_reference = $5
+            RETURNING id, nick, valor_final
+            `,
+            [
+                String(pagamento.id),
+                "approved",
+                "pendente",
+                false,
+                referencia
+            ]
+        );
+
+        if (resultadoPedido.rowCount === 0) {
+
+            console.error(
+                "❌ Pedido não encontrado no banco."
+            );
+
+            console.error(
+                "🧾 Referência:",
+                referencia
+            );
+
+        } else {
+
+            const pedido = resultadoPedido.rows[0];
+
+            console.log("🗄️ Pedido atualizado no banco!");
+            console.log("🆔 Pedido ID:", pedido.id);
+            console.log("🎮 Nick:", pedido.nick);
+            console.log("💰 Valor:", pedido.valor_final);
+            console.log("📦 Entrega: pendente");
 
         }
+
+    }
+
+}
 
         return res.sendStatus(200);
 
