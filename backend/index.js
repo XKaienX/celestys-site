@@ -409,9 +409,21 @@ app.post("/webhook/mercadopago", async (req, res) => {
         // BUSCAR PAGAMENTO NO MERCADO PAGO
         // ========================================
 
-        const pagamento = await paymentClient.get({
-            id: dataId
-        });
+        let pagamento = null;
+
+try {
+
+    pagamento = await paymentClient.get({
+        id: dataId
+    });
+
+} catch (erroPagamento) {
+
+    console.log("⚠️ Não foi possível consultar o pagamento:", dataId);
+    console.log("ℹ️ Isso pode acontecer no teste com um ID fictício.");
+
+    return res.sendStatus(200);
+}
 
         console.log("========================================");
         console.log("🔔 NOTIFICAÇÃO DE PAGAMENTO");
