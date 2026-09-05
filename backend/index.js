@@ -360,6 +360,57 @@ app.post("/criar-pagamento", async (req, res) => {
 });
 
 // ========================================
+// TESTE DE PAGAMENTO
+// ========================================
+
+app.get("/teste-pagamento/:id", async (req, res) => {
+
+    try {
+
+        if (!paymentClient) {
+            return res.status(503).json({
+                sucesso: false,
+                erro: "Mercado Pago não configurado."
+            });
+        }
+
+        const pagamento = await paymentClient.get({
+            id: req.params.id
+        });
+
+        console.log("========================================");
+        console.log("🔎 CONSULTA DE PAGAMENTO");
+        console.log("💳 Payment ID:", pagamento.id);
+        console.log("📊 Status:", pagamento.status);
+        console.log("💰 Valor:", pagamento.transaction_amount);
+        console.log("🧾 Referência:", pagamento.external_reference);
+        console.log("🎮 Nick:", pagamento.metadata?.nick);
+        console.log("========================================");
+
+        return res.json({
+            sucesso: true,
+            id: pagamento.id,
+            status: pagamento.status,
+            valor: pagamento.transaction_amount,
+            referencia: pagamento.external_reference,
+            nick: pagamento.metadata?.nick
+        });
+
+    } catch (error) {
+
+        console.error("❌ Erro ao consultar pagamento:");
+        console.error(error);
+
+        return res.status(500).json({
+            sucesso: false,
+            erro: "Não foi possível consultar o pagamento."
+        });
+
+    }
+
+});
+
+// ========================================
 // WEBHOOK MERCADO PAGO
 // ========================================
 
