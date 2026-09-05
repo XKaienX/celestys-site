@@ -1035,7 +1035,7 @@ if (pagamento.status !== "approved") {
     return res.sendStatus(200);
 }
 
-        if (pagamento.status === "approved") {
+      if (pagamento.status === "approved") {
 
     console.log("🎉 PAGAMENTO APROVADO!");
     console.log("🎮 Nick:", pagamento.metadata?.nick);
@@ -1044,77 +1044,71 @@ if (pagamento.status !== "approved") {
     // ATUALIZAR PEDIDO NO BANCO
     // ========================================
 
-    const referencia = pagamento.external_reference;
+    const resultadoPedido = await db.query(
+        `
+        UPDATE pedidos
+        SET
+            payment_id = $1,
+            status = $2,
+            entrega_status = $3,
+            entregue = $4,
+            updated_at = NOW()
+        WHERE external_reference = $5
+        AND payment_id IS NULL
+        RETURNING id, nick, valor_final, cupom
+        `,
+        [
+            String(pagamento.id),
+            "approved",
+            "pendente",
+            false,
+            referencia
+        ]
+    );
 
-    if (!referencia) {
+    if (resultadoPedido.rowCount === 0) {
 
         console.error(
-            "❌ Pagamento aprovado sem referência externa."
+            "❌ Pedido não encontrado ou pagamento já processado."
+        );
+
+        console.error(
+            "🧾 Referência:",
+            referencia
         );
 
     } else {
 
-        const resultadoPedido = await db.query(
-    `
-    UPDATE pedidos
-    SET
-        payment_id = $1,
-        status = $2,
-        entrega_status = $3,
-        entregue = $4,
-        updated_at = NOW()
-    WHERE external_reference = $5
-    AND payment_id IS NULL
-    RETURNING id, nick, valor_final, cupom
-    `,
-    [
-        String(pagamento.id),
-        "approved",
-        "pendente",
-        false,
-        referencia
-    ]
-);
+        const pedido = resultadoPedido.rows[0];
 
-if (resultadoPedido.rowCount === 0) {
+        console.log("🗄️ Pedido atualizado no banco!");
+        console.log("🆔 Pedido ID:", pedido.id);
+        console.log("🎮 Nick:", pedido.nick);
+        console.log("💰 Valor:", pedido.valor_final);
+        console.log("📦 Entrega: pendente");
 
-    console.error(
-        "❌ Pedido não encontrado ou pagamento já processado."
-    );
+        // ========================================
+        // REGISTRAR USO DO CUPOM
+        // ========================================
 
-    console.error(
-        "🧾 Referência:",
-        referencia
-    );
+        if (pedido.cupom) {
 
-} else {
+            await db.query(
+                `
+                UPDATE cupons
+                SET usos_realizados = usos_realizados + 1
+                WHERE codigo = $1
+                `,
+                [pedido.cupom]
+            );
 
-    const pedido = resultadoPedido.rows[0];
-
-    console.log("🗄️ Pedido atualizado no banco!");
-    console.log("🆔 Pedido ID:", pedido.id);
-    console.log("🎮 Nick:", pedido.nick);
-    console.log("💰 Valor:", pedido.valor_final);
-    console.log("📦 Entrega: pendente");
-
-    if (pedido.cupom) {
-
-        await db.query(
-            `
-            UPDATE cupons
-            SET usos_realizados = usos_realizados + 1
-            WHERE codigo = $1
-            `,
-            [pedido.cupom]
-        );
-
-        console.log("🎟️ Uso do cupom registrado!");
-        console.log("🏷️ Cupom:", pedido.cupom);
+            console.log("🎟️ Uso do cupom registrado!");
+            console.log("🏷️ Cupom:", pedido.cupom);
+        }
     }
-
 }
 
-        return res.sendStatus(200);
+return res.sendStatus(200);
 
     } catch (error) {
 
