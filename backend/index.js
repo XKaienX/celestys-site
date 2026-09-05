@@ -1,6 +1,7 @@
 require("dotenv").config();
 
 const express = require("express");
+const { Pool } = require("pg");
 const cors = require("cors");
 const {
     MercadoPagoConfig,
@@ -15,6 +16,26 @@ const PORT = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.json());
+
+// ========================================
+// BANCO DE DADOS POSTGRESQL
+// ========================================
+
+const db = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: {
+        rejectUnauthorized: false
+    }
+});
+
+db.query("SELECT NOW()")
+    .then(() => {
+        console.log("🗄️ PostgreSQL conectado!");
+    })
+    .catch((error) => {
+        console.error("❌ Erro ao conectar ao PostgreSQL:");
+        console.error(error);
+    });
 
 // ========================================
 // MERCADO PAGO
