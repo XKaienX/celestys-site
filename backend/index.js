@@ -2,7 +2,13 @@ require("dotenv").config();
 
 const express = require("express");
 const cors = require("cors");
-const { MercadoPagoConfig, Preference } = require("mercadopago");
+const {
+    MercadoPagoConfig,
+    Preference,
+    Payment,
+    WebhookSignatureValidator,
+    InvalidWebhookSignatureError
+} = require("mercadopago");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -16,8 +22,10 @@ app.use(express.json());
 
 let mpClient = null;
 let preferenceClient = null;
+let paymentClient = null;
 
 const accessToken = process.env.MERCADOPAGO_ACCESS_TOKEN;
+const webhookSecret = process.env.MERCADOPAGO_WEBHOOK_SECRET;
 
 const tokenValido = Boolean(accessToken);
 
@@ -27,6 +35,7 @@ if (tokenValido) {
     });
 
     preferenceClient = new Preference(mpClient);
+    paymentClient = new Payment(mpClient);
 
     console.log("💳 Mercado Pago configurado!");
 } else {
@@ -346,6 +355,106 @@ app.post("/criar-pagamento", async (req, res) => {
 
         });
 
+    }
+
+});
+
+// ========================================
+// WEBHOOK MERCADO PAGO
+// ========================================
+
+app.post("/webhook/mercadopago", async (req, res) => {
+
+    try {
+
+        if (!webhookSecret) {
+            console.error("❌ Chave secreta do Webhook não configurada.");
+            return res.sendStatus(500);
+        }
+
+        const xSignature = req.headers["x-signature"];
+        const xRequestId = req.headers["x-request-id"];
+        const dataId = req.query["data.id"];
+
+        if (!xSignature || !xRequestId || !dataId) {
+            console.error("❌ Webhook recebido sem dados necessários.");
+            return res.sendStatus(400);
+        }
+
+        // ========================================
+        // VALIDAR ASSINATURA
+        // ========================================
+
+        WebhookSignatureValidator.validate({
+            xSignature: xSignature,
+            xRequestId: xRequestId,
+            dataId: dataId,
+            secret: webhookSecret
+        });
+
+        console.log("✅ Assinatura do Webhook válida!");
+
+        // ========================================
+        // VERIFICAR TIPO DE NOTIFICAÇÃO
+        // ========================================
+
+        const tipo = req.body?.type;
+
+        if (tipo !== "payment") {
+            console.log("ℹ️ Webhook ignorado. Tipo:", tipo);
+            return res.sendStatus(200);
+        }
+
+        // ========================================
+        // BUSCAR PAGAMENTO NO MERCADO PAGO
+        // ========================================
+
+        const pagamento = await paymentClient.get({
+            id: dataId
+        });
+
+        console.log("========================================");
+        console.log("🔔 NOTIFICAÇÃO DE PAGAMENTO");
+        console.log("💳 Payment ID:", pagamento.id);
+        console.log("📊 Status:", pagamento.status);
+        console.log("💰 Valor:", pagamento.transaction_amount);
+        console.log("🧾 Referência:", pagamento.external_reference);
+        console.log("========================================");
+
+        // ========================================
+        // PAGAMENTO APROVADO
+        // ========================================
+
+        if (pagamento.status === "approved") {
+
+            console.log("🎉 PAGAMENTO APROVADO!");
+            console.log("🎮 Nick:", pagamento.metadata?.nick);
+
+            // ========================================
+            // ENTREGA DOS PRODUTOS
+            // ========================================
+            //
+            // A entrega automática será adicionada
+            // na próxima etapa.
+            //
+
+        }
+
+        return res.sendStatus(200);
+
+    } catch (error) {
+
+        if (error instanceof InvalidWebhookSignatureError) {
+
+            console.error("❌ Assinatura do Webhook inválida!");
+
+            return res.sendStatus(401);
+        }
+
+        console.error("❌ Erro no Webhook:");
+        console.error(error);
+
+        return res.sendStatus(500);
     }
 
 });
