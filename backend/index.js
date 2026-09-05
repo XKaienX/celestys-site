@@ -248,7 +248,14 @@ app.post("/criar-pagamento", async (req, res) => {
             });
         }
 
-        const { produtos, nick } = req.body;
+        const { produtos, nick, cupom } = req.body;
+
+        console.log("========================================");
+console.log("📥 DADOS RECEBIDOS NO PAGAMENTO");
+console.log("🎟️ Cupom recebido:", cupom);
+console.log("🎮 Nick recebido:", nick);
+console.log("📦 Produtos recebidos:", produtos);
+console.log("========================================");
 
         // ========================================
         // VALIDAÇÕES BÁSICAS
@@ -277,6 +284,70 @@ app.post("/criar-pagamento", async (req, res) => {
                 erro: "Nick inválido."
             });
         }
+        // ========================================
+// VALIDAR CUPOM
+// ========================================
+
+let cupomUsado = null;
+
+if (cupom) {
+
+    const codigoCupom = String(cupom)
+        .trim()
+        .toUpperCase();
+
+    const cupomResult = await db.query(
+        `
+        SELECT *
+        FROM cupons
+        WHERE codigo = $1
+        LIMIT 1
+        `,
+        [codigoCupom]
+    );
+
+    if (cupomResult.rowCount === 0) {
+        return res.status(400).json({
+            sucesso: false,
+            erro: "Cupom inválido."
+        });
+    }
+
+    cupomUsado = cupomResult.rows[0];
+
+    // Verificar se está ativo
+    if (!cupomUsado.ativo) {
+        return res.status(400).json({
+            sucesso: false,
+            erro: "Este cupom está desativado."
+        });
+    }
+
+    // Verificar validade
+    if (
+        cupomUsado.validade &&
+        new Date(cupomUsado.validade) < new Date()
+    ) {
+        return res.status(400).json({
+            sucesso: false,
+            erro: "Este cupom está expirado."
+        });
+    }
+
+    // Verificar limite de usos
+    if (
+        cupomUsado.uso_maximo !== null &&
+        cupomUsado.usos_realizados >= cupomUsado.uso_maximo
+    ) {
+        return res.status(400).json({
+            sucesso: false,
+            erro: "Este cupom atingiu o limite de usos."
+        });
+    }
+
+    console.log("🎟️ Cupom válido:", codigoCupom);
+
+}
 
         // ========================================
 // TRANSFORMAR PRODUTOS DO CARRINHO
@@ -452,42 +523,130 @@ const items = produtos.map((produto) => {
 
 });
 
-        // ========================================
-        // REFERÊNCIA ÚNICA DA COMPRA
-        // ========================================
+// ========================================
+// REFERÊNCIA ÚNICA DA COMPRA
+// ========================================
 
-        const referencia = `CELESTYS-${Date.now()}-${Math.floor(
-            Math.random() * 10000
-        )}`;
+const referencia = `CELESTYS-${Date.now()}-${Math.floor(
+    Math.random() * 10000
+)}`;
 
-        // ========================================
-        // CRIAR PREFERÊNCIA NO MERCADO PAGO
-        // ========================================
-
-        const preference = await preferenceClient.create({
-
-            body: {
-
-                items: items,
-
-                external_reference: referencia,
-
-                metadata: {
-                    nick: nickLimpo
-                }
-
-            }
-
-        });
-
-        // ========================================
-// SALVAR PEDIDO NO BANCO
+// ========================================
+// CALCULAR VALOR ORIGINAL DA COMPRA
 // ========================================
 
 const valorPedido = itensPedido.reduce(
     (total, item) => total + item.valor_total,
     0
 );
+
+// ========================================
+// CALCULAR DESCONTO DO CUPOM
+// ========================================
+
+let desconto = 0;
+let valorFinal = valorPedido;
+
+if (cupomUsado) {
+
+    const valorMinimo = Number(
+        cupomUsado.valor_minimo || 0
+    );
+
+    if (valorPedido < valorMinimo) {
+
+        return res.status(400).json({
+            sucesso: false,
+            erro: `Este cupom exige uma compra mínima de R$ ${valorMinimo.toFixed(2)}.`
+        });
+
+    }
+
+    const descontoPercentual = Number(
+        cupomUsado.desconto_percentual || 0
+    );
+
+    const descontoFixo = Number(
+        cupomUsado.desconto_fixo || 0
+    );
+
+    // Desconto percentual
+    if (descontoPercentual > 0) {
+
+        desconto =
+            valorPedido * (descontoPercentual / 100);
+
+    }
+
+    // Desconto fixo
+    if (descontoFixo > 0) {
+
+        desconto += descontoFixo;
+
+    }
+
+    // Nunca deixar o desconto passar do valor da compra
+    if (desconto > valorPedido) {
+
+        desconto = valorPedido;
+
+    }
+
+    valorFinal = valorPedido - desconto;
+}
+
+// ========================================
+// ARREDONDAR VALORES
+// ========================================
+
+desconto = Number(
+    desconto.toFixed(2)
+);
+
+valorFinal = Number(
+    valorFinal.toFixed(2)
+);
+
+console.log("💰 Valor original:", valorPedido);
+console.log("🎟️ Desconto:", desconto);
+console.log("💳 Valor final:", valorFinal);
+
+// ========================================
+// ITEM FINAL PARA O MERCADO PAGO
+// ========================================
+
+const itemsComDesconto = [
+    {
+        title: `Compra Celestys - ${nickLimpo}`,
+        quantity: 1,
+        unit_price: valorFinal,
+        currency_id: "BRL"
+    }
+];
+
+// ========================================
+// CRIAR PREFERÊNCIA NO MERCADO PAGO
+// ========================================
+
+const preference = await preferenceClient.create({
+
+    body: {
+
+        items: itemsComDesconto,
+
+        external_reference: referencia,
+
+        metadata: {
+            nick: nickLimpo
+        }
+
+    }
+
+});
+
+// ========================================
+// SALVAR PEDIDO NO BANCO
+// ========================================
 
 const pedidoResult = await db.query(
     `
@@ -522,9 +681,9 @@ const pedidoResult = await db.query(
         referencia,
         preference.id,
         Number(valorPedido.toFixed(2)),
-        0,
-        Number(valorPedido.toFixed(2)),
-        null,
+        desconto,
+        Number(valorFinal.toFixed(2)),
+        cupomUsado ? cupomUsado.codigo : null,
         "pending",
         "pendente",
         false
@@ -859,13 +1018,11 @@ if (pagamento.status !== "approved") {
         `
         UPDATE pedidos
         SET
-            payment_id = $1,
-            status = $2,
+            status = $1,
             updated_at = NOW()
-        WHERE external_reference = $3
+        WHERE external_reference = $2
         `,
         [
-            String(pagamento.id),
             String(pagamento.status),
             referencia
         ]
@@ -898,49 +1055,61 @@ if (pagamento.status !== "approved") {
     } else {
 
         const resultadoPedido = await db.query(
+    `
+    UPDATE pedidos
+    SET
+        payment_id = $1,
+        status = $2,
+        entrega_status = $3,
+        entregue = $4,
+        updated_at = NOW()
+    WHERE external_reference = $5
+    AND payment_id IS NULL
+    RETURNING id, nick, valor_final, cupom
+    `,
+    [
+        String(pagamento.id),
+        "approved",
+        "pendente",
+        false,
+        referencia
+    ]
+);
+
+if (resultadoPedido.rowCount === 0) {
+
+    console.error(
+        "❌ Pedido não encontrado ou pagamento já processado."
+    );
+
+    console.error(
+        "🧾 Referência:",
+        referencia
+    );
+
+} else {
+
+    const pedido = resultadoPedido.rows[0];
+
+    console.log("🗄️ Pedido atualizado no banco!");
+    console.log("🆔 Pedido ID:", pedido.id);
+    console.log("🎮 Nick:", pedido.nick);
+    console.log("💰 Valor:", pedido.valor_final);
+    console.log("📦 Entrega: pendente");
+
+    if (pedido.cupom) {
+
+        await db.query(
             `
-            UPDATE pedidos
-            SET
-                payment_id = $1,
-                status = $2,
-                entrega_status = $3,
-                entregue = $4,
-                updated_at = NOW()
-            WHERE external_reference = $5
-            RETURNING id, nick, valor_final
+            UPDATE cupons
+            SET usos_realizados = usos_realizados + 1
+            WHERE codigo = $1
             `,
-            [
-                String(pagamento.id),
-                "approved",
-                "pendente",
-                false,
-                referencia
-            ]
+            [pedido.cupom]
         );
 
-        if (resultadoPedido.rowCount === 0) {
-
-            console.error(
-                "❌ Pedido não encontrado no banco."
-            );
-
-            console.error(
-                "🧾 Referência:",
-                referencia
-            );
-
-        } else {
-
-            const pedido = resultadoPedido.rows[0];
-
-            console.log("🗄️ Pedido atualizado no banco!");
-            console.log("🆔 Pedido ID:", pedido.id);
-            console.log("🎮 Nick:", pedido.nick);
-            console.log("💰 Valor:", pedido.valor_final);
-            console.log("📦 Entrega: pendente");
-
-        }
-
+        console.log("🎟️ Uso do cupom registrado!");
+        console.log("🏷️ Cupom:", pedido.cupom);
     }
 
 }
