@@ -1,0 +1,2753 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Loja | Celestys</title>
+
+    <link rel="stylesheet" href="loja.css">
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+</head>
+
+<body>
+
+    <!-- CABEÇALHO DA LOJA -->
+
+<header class="navbar">
+
+    <div class="logo">
+
+        <img
+    src="assets/logo.png"
+    alt="Celestys"
+    onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"
+>
+
+        <span>CELESTYS</span>
+
+    </div>
+
+    <nav>
+        <a href="index.html">Início</a>
+        <a href="index.html#sobre">Sobre</a>
+        <a href="index.html#equipe">Equipe</a>
+        <a href="loja.html">Loja</a>
+    </nav>
+
+    <button class="cart-button" onclick="abrirCarrinho()">
+        🛒 Carrinho
+        <span id="cart-count">0</span>
+    </button>
+
+</header>
+
+    <!-- LOJA -->
+
+    <main class="store">
+
+        <section class="store-hero">
+
+            <span class="store-tag">🛒 LOJA CELESTYS</span>
+
+            <h1>Escolha seus benefícios</h1>
+
+            <p>
+                Encontre VIPs, chaves e recursos para melhorar
+                sua experiência dentro do universo Celestys.
+            </p>
+
+        </section>
+
+
+        <!-- CATEGORIAS -->
+
+        <div class="store-categories">
+
+            <a href="#vips">💎 VIPs</a>
+            <a href="#chaves">🔑 Chaves</a>
+            <a href="#terrenos">🌍 Terrenos</a>
+            <a href="#utilidades">⚡ Utilidades</a>
+
+        </div>
+
+
+        <!-- VIPS -->
+
+        <section class="store-section" id="vips">
+
+            <h2>💎 Planos VIP</h2>
+
+            <p class="store-description">
+                Escolha o plano ideal para sua jornada no Celestys.
+            </p>
+
+            <div class="store-grid">
+
+                <div class="store-card">
+
+                    <div class="store-icon">⭐</div>
+
+                    <h3>VIP Trainer</h3>
+
+                    <span class="store-level">NÍVEL 1</span>
+
+                    <div class="store-price">
+                        R$ 9,90
+                    </div>
+
+                    <button onclick="abrirBeneficios('trainer')">
+    🎁 Ver benefícios
+</button>
+
+<button onclick="adicionarCarrinho('VIP Trainer', 9.90)">
+    🛒 Comprar
+</button>
+
+                </div>
+
+
+                <div class="store-card">
+
+                    <div class="store-icon">💠</div>
+
+                    <h3>VIP Elite</h3>
+
+                    <span class="store-level">NÍVEL 2</span>
+
+                    <div class="store-price">
+                        R$ 19,90
+                    </div>
+
+                    <button onclick="abrirBeneficios('elite')">
+    🎁 Ver benefícios
+</button>
+
+<button onclick="adicionarCarrinho('VIP Elite', 19.90)">
+    🛒 Comprar
+</button>
+
+                </div>
+
+
+                <div class="store-card">
+
+                    <div class="store-icon">👑</div>
+
+                    <h3>VIP Champion</h3>
+
+                    <span class="store-level">NÍVEL 3</span>
+
+                    <div class="store-price">
+                        R$ 34,90
+                    </div>
+
+                    <button onclick="abrirBeneficios('champion')">
+    🎁 Ver benefícios
+</button>
+
+<button onclick="adicionarCarrinho('VIP Champion', 34.90)">
+    🛒 Comprar
+</button>
+
+                </div>
+
+                <div class="store-card master">
+
+    <div class="store-icon">💎</div>
+
+    <h3>VIP Master</h3>
+
+    <span class="store-level">NÍVEL MÁXIMO</span>
+
+    <div class="store-price">
+        R$ 49,90
+    </div>
+
+    <button onclick="abrirBeneficios('master')">
+        🎁 Ver benefícios
+    </button>
+
+    <button onclick="adicionarCarrinho('VIP Master', 49.90)">
+        🛒 Comprar
+    </button>
+
+</div>
+
+            </div>
+
+        </section>
+
+
+<!-- CHAVES -->
+
+<section class="store-section" id="chaves">
+
+    <h2>🔑 Chaves</h2>
+
+    <p class="store-description">
+        Abra suas chaves e descubra recompensas incríveis!
+    </p>
+
+    <div class="store-grid">
+
+
+        <!-- GERAÇÃO 1 -->
+
+        <div class="store-card">
+
+            <div class="store-icon">✨</div>
+
+            <h3>Chave de Lendário</h3>
+
+            <span class="store-level">1ª GERAÇÃO</span>
+
+            <p class="product-description">
+                Receba um Lendário aleatório da 1ª geração.
+            </p>
+
+            <div class="store-price" id="lendario1-preco">
+                R$ 9,99
+            </div>
+
+            <div class="quantity-selector">
+
+                <button type="button" onclick="alterarChave('lendario1', -1)">
+                    −
+                </button>
+
+                <span id="lendario1-quantidade">1</span>
+
+                <button type="button" onclick="alterarChave('lendario1', 1)">
+                    +
+                </button>
+
+            </div>
+
+            <button onclick="comprarChave('Chave de Lendário - 1ª Geração', 9.99, 'lendario1')">
+                🛒 Comprar
+            </button>
+
+        </div>
+
+
+        <!-- GERAÇÃO 2 -->
+
+        <div class="store-card">
+
+            <div class="store-icon">✨</div>
+
+            <h3>Chave de Lendário</h3>
+
+            <span class="store-level">2ª GERAÇÃO</span>
+
+            <p class="product-description">
+                Receba um Lendário aleatório da 2ª geração.
+            </p>
+
+            <div class="store-price" id="lendario2-preco">
+                R$ 14,99
+            </div>
+
+            <div class="quantity-selector">
+
+                <button type="button" onclick="alterarChave('lendario2', -1)">
+                    −
+                </button>
+
+                <span id="lendario2-quantidade">1</span>
+
+                <button type="button" onclick="alterarChave('lendario2', 1)">
+                    +
+                </button>
+
+            </div>
+
+            <button onclick="comprarChave('Chave de Lendário - 2ª Geração', 14.99, 'lendario2')">
+                🛒 Comprar
+            </button>
+
+        </div>
+
+
+        <!-- GERAÇÃO 3 -->
+
+        <div class="store-card">
+
+            <div class="store-icon">✨</div>
+
+            <h3>Chave de Lendário</h3>
+
+            <span class="store-level">3ª GERAÇÃO</span>
+
+            <p class="product-description">
+                Receba um Lendário aleatório da 3ª geração.
+            </p>
+
+            <div class="store-price" id="lendario3-preco">
+                R$ 17,99
+            </div>
+
+            <div class="quantity-selector">
+
+                <button type="button" onclick="alterarChave('lendario3', -1)">
+                    −
+                </button>
+
+                <span id="lendario3-quantidade">1</span>
+
+                <button type="button" onclick="alterarChave('lendario3', 1)">
+                    +
+                </button>
+
+            </div>
+
+            <button onclick="comprarChave('Chave de Lendário - 3ª Geração', 17.99, 'lendario3')">
+                🛒 Comprar
+            </button>
+
+        </div>
+
+
+        <!-- GERAÇÃO 4 -->
+
+        <div class="store-card">
+
+            <div class="store-icon">✨</div>
+
+            <h3>Chave de Lendário</h3>
+
+            <span class="store-level">4ª GERAÇÃO</span>
+
+            <p class="product-description">
+                Receba um Lendário aleatório da 4ª geração.
+            </p>
+
+            <div class="store-price" id="lendario4-preco">
+                R$ 11,99
+            </div>
+
+            <div class="quantity-selector">
+
+                <button type="button" onclick="alterarChave('lendario4', -1)">
+                    −
+                </button>
+
+                <span id="lendario4-quantidade">1</span>
+
+                <button type="button" onclick="alterarChave('lendario4', 1)">
+                    +
+                </button>
+
+            </div>
+
+            <button onclick="comprarChave('Chave de Lendário - 4ª Geração', 11.99, 'lendario4')">
+                🛒 Comprar
+            </button>
+
+        </div>
+
+
+        <!-- GERAÇÃO 5 -->
+
+        <div class="store-card">
+
+            <div class="store-icon">✨</div>
+
+            <h3>Chave de Lendário</h3>
+
+            <span class="store-level">5ª GERAÇÃO</span>
+
+            <p class="product-description">
+                Receba um Lendário aleatório da 5ª geração.
+            </p>
+
+            <div class="store-price" id="lendario5-preco">
+                R$ 17,99
+            </div>
+
+            <div class="quantity-selector">
+
+                <button type="button" onclick="alterarChave('lendario5', -1)">
+                    −
+                </button>
+
+                <span id="lendario5-quantidade">1</span>
+
+                <button type="button" onclick="alterarChave('lendario5', 1)">
+                    +
+                </button>
+
+            </div>
+
+            <button onclick="comprarChave('Chave de Lendário - 5ª Geração', 17.99, 'lendario5')">
+                🛒 Comprar
+            </button>
+
+        </div>
+
+
+        <!-- GERAÇÃO 6 -->
+
+        <div class="store-card">
+
+            <div class="store-icon">✨</div>
+
+            <h3>Chave de Lendário</h3>
+
+            <span class="store-level">6ª GERAÇÃO</span>
+
+            <p class="product-description">
+                Receba um Lendário aleatório da 6ª geração.
+            </p>
+
+            <div class="store-price" id="lendario6-preco">
+                R$ 17,99
+            </div>
+
+            <div class="quantity-selector">
+
+                <button type="button" onclick="alterarChave('lendario6', -1)">
+                    −
+                </button>
+
+                <span id="lendario6-quantidade">1</span>
+
+                <button type="button" onclick="alterarChave('lendario6', 1)">
+                    +
+                </button>
+
+            </div>
+
+            <button onclick="comprarChave('Chave de Lendário - 6ª Geração', 17.99, 'lendario6')">
+                🛒 Comprar
+            </button>
+
+        </div>
+
+
+        <!-- GERAÇÃO 8 -->
+
+        <div class="store-card">
+
+            <div class="store-icon">✨</div>
+
+            <h3>Chave de Lendário</h3>
+
+            <span class="store-level">8ª GERAÇÃO</span>
+
+            <p class="product-description">
+                Receba um Lendário aleatório da 8ª geração.
+            </p>
+
+            <div class="store-price" id="lendario8-preco">
+                R$ 19,99
+            </div>
+
+            <div class="quantity-selector">
+
+                <button type="button" onclick="alterarChave('lendario8', -1)">
+                    −
+                </button>
+
+                <span id="lendario8-quantidade">1</span>
+
+                <button type="button" onclick="alterarChave('lendario8', 1)">
+                    +
+                </button>
+
+            </div>
+
+            <button onclick="comprarChave('Chave de Lendário - 8ª Geração', 19.99, 'lendario8')">
+                🛒 Comprar
+            </button>
+
+        </div>
+
+
+        <!-- GERAÇÃO 9 -->
+
+        <div class="store-card">
+
+            <div class="store-icon">✨</div>
+
+            <h3>Chave de Lendário</h3>
+
+            <span class="store-level">9ª GERAÇÃO</span>
+
+            <p class="product-description">
+                Receba um Lendário aleatório da 9ª geração.
+            </p>
+
+            <div class="store-price" id="lendario9-preco">
+                R$ 31,99
+            </div>
+
+            <div class="quantity-selector">
+
+                <button type="button" onclick="alterarChave('lendario9', -1)">
+                    −
+                </button>
+
+                <span id="lendario9-quantidade">1</span>
+
+                <button type="button" onclick="alterarChave('lendario9', 1)">
+                    +
+                </button>
+
+            </div>
+
+            <button onclick="comprarChave('Chave de Lendário - 9ª Geração', 31.99, 'lendario9')">
+                🛒 Comprar
+            </button>
+
+        </div>
+
+
+        <!-- PARADOX -->
+
+        <div class="store-card">
+
+            <div class="store-icon">🌀</div>
+
+            <h3>Chave de Paradox</h3>
+
+            <span class="store-level">GEN 9</span>
+
+            <p class="product-description">
+                Receba um Pokémon Paradox aleatório.
+            </p>
+
+            <div class="store-price" id="paradox-preco">
+                R$ 5,99
+            </div>
+
+            <div class="quantity-selector">
+
+                <button type="button" onclick="alterarChave('paradox', -1)">
+                    −
+                </button>
+
+                <span id="paradox-quantidade">1</span>
+
+                <button type="button" onclick="alterarChave('paradox', 1)">
+                    +
+                </button>
+
+            </div>
+
+            <button onclick="comprarChave('Chave de Paradox', 5.99, 'paradox')">
+                🛒 Comprar
+            </button>
+
+        </div>
+
+
+        <!-- ULTRA BEAST -->
+
+        <div class="store-card">
+
+            <div class="store-icon">🔵</div>
+
+            <h3>Chave de Ultra Beast</h3>
+
+            <span class="store-level">ULTRA BEAST</span>
+
+            <p class="product-description">
+                Receba uma Ultra Beast aleatória.
+            </p>
+
+            <div class="store-price" id="ultrabeast-preco">
+                R$ 18,99
+            </div>
+
+            <div class="quantity-selector">
+
+                <button type="button" onclick="alterarChave('ultrabeast', -1)">
+                    −
+                </button>
+
+                <span id="ultrabeast-quantidade">1</span>
+
+                <button type="button" onclick="alterarChave('ultrabeast', 1)">
+                    +
+                </button>
+
+            </div>
+
+            <button onclick="comprarChave('Chave de Ultra Beast', 18.99, 'ultrabeast')">
+                🛒 Comprar
+            </button>
+
+        </div>
+
+    </div>
+
+</section>
+
+<!-- MÁQUINAS -->
+
+<div class="store-card">
+
+    <div class="store-icon">⚙️</div>
+
+    <h3>Chaves de Máquinas</h3>
+
+    <span class="store-level">5 CHAVES</span>
+
+    <p class="product-description">
+        Pacote com 5 chaves de máquinas.
+    </p>
+
+    <div class="store-price" id="maquinas-preco">
+        R$ 4,99
+    </div>
+
+    <div class="quantity-selector">
+
+        <button type="button" onclick="alterarPacote('maquinas', -1)">
+            −
+        </button>
+
+        <span id="maquinas-quantidade">
+            5
+        </span>
+
+        <button type="button" onclick="alterarPacote('maquinas', 1)">
+            +
+        </button>
+
+    </div>
+
+    <button onclick="comprarPacote('Chaves de Máquinas', 4.99, 'maquinas')">
+        🛒 Comprar
+    </button>
+
+</div>
+
+
+<!-- SHINY -->
+
+<div class="store-card">
+
+    <div class="store-icon">🌟</div>
+
+    <h3>Chaves de Shiny</h3>
+
+    <span class="store-level">5 CHAVES</span>
+
+    <p class="product-description">
+        Pacote com 5 chaves para buscar seu Shiny.
+    </p>
+
+    <div class="store-price" id="shiny-preco">
+        R$ 2,99
+    </div>
+
+    <div class="quantity-selector">
+
+        <button type="button" onclick="alterarPacote('shiny', -1)">
+            −
+        </button>
+
+        <span id="shiny-quantidade">
+            5
+        </span>
+
+        <button type="button" onclick="alterarPacote('shiny', 1)">
+            +
+        </button>
+
+    </div>
+
+    <button onclick="comprarPacote('Chaves de Shiny', 2.99, 'shiny')">
+        🛒 Comprar
+    </button>
+
+</div>
+
+
+        <!-- TERRENOS -->
+
+        <section class="store-section" id="terrenos">
+
+    <h2>🌍 Terrenos</h2>
+
+    <p class="store-description">
+        Expanda seu espaço dentro do servidor.
+    </p>
+
+    <div class="store-grid">
+
+        <div class="store-card">
+
+            <div class="store-icon">🏠</div>
+
+            <h3>Aumento de Terreno</h3>
+
+            <span class="store-level">
+                10 UNIDADES
+            </span>
+
+            <p class="product-description">
+                Aumente seu terreno em 10 unidades por compra.
+            </p>
+
+            <div class="store-price" id="terreno-preco">
+                R$ 5,00
+            </div>
+
+            <div class="quantity-selector">
+
+                <button type="button" onclick="alterarTerreno(-1)">
+                    −
+                </button>
+
+                <span id="terreno-quantidade">
+                    10
+                </span>
+
+                <button type="button" onclick="alterarTerreno(1)">
+                    +
+                </button>
+
+            </div>
+
+            <button onclick="comprarTerreno()">
+                🛒 Comprar
+            </button>
+
+        </div>
+
+    </div>
+
+</section>
+
+        <!-- UTILIDADES -->
+
+        <section class="store-section" id="utilidades">
+
+    <h2>⚡ Utilidades</h2>
+
+    <p class="store-description">
+        Recursos para facilitar sua experiência no servidor.
+    </p>
+
+    <div class="store-grid">
+
+        <div class="store-card">
+
+            <div class="store-icon">⚡</div>
+
+            <h3>Chunk Loader</h3>
+
+            <span class="store-level">
+                1 UNIDADE
+            </span>
+
+            <p class="product-description">
+                Mantenha seus chunks carregados mesmo quando estiver longe.
+            </p>
+
+            <div class="store-price" id="chunk-preco">
+                R$ 15,00
+            </div>
+
+            <div class="quantity-selector">
+
+                <button type="button" onclick="alterarChunk(-1)">
+                    −
+                </button>
+
+                <span id="chunk-quantidade">
+                    1
+                </span>
+
+                <button type="button" onclick="alterarChunk(1)">
+                    +
+                </button>
+
+            </div>
+
+            <button onclick="comprarChunk()">
+                🛒 Comprar
+            </button>
+
+        </div>
+
+    </div>
+
+</section>
+
+</main>
+
+<!-- BENEFÍCIOS VIP TRAINER -->
+
+<div class="beneficios-overlay" id="beneficios-trainer">
+
+    <div class="beneficios-box">
+
+        <button
+            class="beneficios-close"
+            onclick="fecharBeneficios('trainer')"
+        >
+            ✕
+        </button>
+
+        <h2>🟢 VIP Trainer</h2>
+
+        <p class="beneficios-subtitle">
+            Confira todos os benefícios do VIP Trainer.
+        </p>
+
+
+        <!-- KIT DIÁRIO -->
+
+        <div class="beneficio-grupo">
+
+            <h3>🎁 Kit Diário</h3>
+
+            <ul>
+                <li>12x Poké Ball</li>
+                <li>4x Great Ball</li>
+                <li>8x Comidas</li>
+                <li>4x Itens de cura</li>
+                <li>$500</li>
+            </ul>
+
+        </div>
+
+
+        <!-- KIT SEMANAL -->
+
+        <div class="beneficio-grupo">
+
+            <h3>📦 Kit Semanal</h3>
+
+            <ul>
+                <li>16x Great Ball</li>
+                <li>4x Ultra Ball</li>
+                <li>2x Rare Candy</li>
+                <li>1x Chave Comum</li>
+                <li>8x Iron Ingot</li>
+                <li>8x Redstone Dust</li>
+            </ul>
+
+        </div>
+
+
+        <!-- KIT MENSAL -->
+
+        <div class="beneficio-grupo">
+
+            <h3>🌟 Kit Mensal</h3>
+
+            <ul>
+                <li>24x Ultra Ball</li>
+                <li>5x Rare Candy</li>
+                <li>1x Chave Comum</li>
+                <li>1x Chave Rara</li>
+                <li>1x Mochila Básica</li>
+                <li>$5.000</li>
+            </ul>
+
+        </div>
+
+
+        <!-- MÁQUINAS -->
+
+        <div class="beneficio-grupo">
+
+            <h3>⚙️ Máquinas e Tecnologia</h3>
+
+            <ul>
+                <li>1x Generator básico <strong>OU</strong> Solar Panel</li>
+                <li>1x Electric Furnace / Furnace aprimorado</li>
+                <li>1x Sophisticated Backpack Ferro</li>
+                <li>1x Upgrade de Auto-Pickup <strong>OU</strong> Smelting</li>
+                <li>8x Iron Ingot</li>
+                <li>8x Redstone Dust</li>
+                <li>8x Copper Ingot</li>
+                <li>2x Diamond</li>
+            </ul>
+
+        </div>
+
+
+        <button
+            class="beneficios-buy"
+            onclick="fecharBeneficios('trainer'); adicionarCarrinho('VIP Trainer', 9.90)"
+        >
+            🛒 Comprar VIP Trainer • R$ 9,90
+        </button>
+
+    </div>
+
+</div>
+
+<!-- BENEFÍCIOS VIP ELITE -->
+
+<div class="beneficios-overlay" id="beneficios-elite">
+
+    <div class="beneficios-box">
+
+        <button
+            class="beneficios-close"
+            onclick="fecharBeneficios('elite')"
+        >
+            ✕
+        </button>
+
+        <h2>🔵 VIP Elite</h2>
+
+        <p class="beneficios-subtitle">
+            Confira todos os benefícios do VIP Elite.
+        </p>
+
+
+        <!-- KIT DIÁRIO -->
+
+        <div class="beneficio-grupo">
+
+            <h3>🎁 Kit Diário</h3>
+
+            <ul>
+                <li>16x Great Ball</li>
+                <li>6x Ultra Ball</li>
+                <li>8x Comidas</li>
+                <li>Itens de cura</li>
+                <li>$1.000</li>
+            </ul>
+
+        </div>
+
+
+        <!-- KIT SEMANAL -->
+
+        <div class="beneficio-grupo">
+
+            <h3>📦 Kit Semanal</h3>
+
+            <ul>
+                <li>24x Ultra Ball</li>
+                <li>3x Rare Candy</li>
+                <li>1x Chave Comum</li>
+                <li>1x Chave Rara</li>
+                <li>Pacote de recursos ATM</li>
+            </ul>
+
+        </div>
+
+
+        <!-- KIT MENSAL -->
+
+        <div class="beneficio-grupo">
+
+            <h3>🌟 Kit Mensal</h3>
+
+            <ul>
+                <li>48x Ultra Ball</li>
+                <li>8x Rare Candy</li>
+                <li>2x Chaves Raras</li>
+                <li>1x Chave Épica</li>
+                <li>1x Master Ball</li>
+                <li>1x Mochila Intermediária</li>
+                <li>$12.500</li>
+            </ul>
+
+        </div>
+
+
+        <!-- KIT COMPETITIVO -->
+
+        <div class="beneficio-grupo">
+
+            <h3>⚔️ Kit Competitivo</h3>
+
+            <ul>
+                <li>1x Ability Capsule</li>
+                <li>2x Mints aleatórias</li>
+                <li>8x EXP Candy L</li>
+                <li>1x Power Item aleatório</li>
+            </ul>
+
+        </div>
+
+
+        <!-- MÁQUINAS -->
+
+        <div class="beneficio-grupo">
+
+            <h3>⚙️ Máquinas e Tecnologia</h3>
+
+            <ul>
+                <li>1x Energy Cube Basic</li>
+                <li>1x Electric Smelter</li>
+                <li>1x Máquina de processamento intermediário</li>
+                <li>1x Sistema inicial AE2 <strong>OU</strong> Refined Storage</li>
+                <li>1x Mochila Ferro/Diamante</li>
+                <li>1x Magnet Upgrade</li>
+                <li>1x Kit básico de cabos/tubos</li>
+                <li>16x Gold Ingot</li>
+                <li>8x Diamond</li>
+                <li>2x Netherite Ingot</li>
+            </ul>
+
+        </div>
+
+
+        <button
+            class="beneficios-buy"
+            onclick="fecharBeneficios('elite'); adicionarCarrinho('VIP Elite', 19.90)"
+        >
+            🛒 Comprar VIP Elite • R$ 19,90
+        </button>
+
+    </div>
+
+</div>
+
+<!-- BENEFÍCIOS VIP CHAMPION -->
+
+<div class="beneficios-overlay" id="beneficios-champion">
+
+    <div class="beneficios-box">
+
+        <button
+            class="beneficios-close"
+            onclick="fecharBeneficios('champion')"
+        >
+            ✕
+        </button>
+
+        <h2>🟣 VIP Champion</h2>
+
+        <p class="beneficios-subtitle">
+            Confira todos os benefícios do VIP Champion.
+        </p>
+
+
+        <!-- KIT DIÁRIO -->
+
+        <div class="beneficio-grupo">
+
+            <h3>🎁 Kit Diário</h3>
+
+            <ul>
+                <li>20x Ultra Ball</li>
+                <li>1x Rare Candy</li>
+                <li>Itens de cura</li>
+                <li>$1.500</li>
+            </ul>
+
+        </div>
+
+
+        <!-- KIT SEMANAL -->
+
+        <div class="beneficio-grupo">
+
+            <h3>📦 Kit Semanal</h3>
+
+            <ul>
+                <li>32x Ultra Ball</li>
+                <li>5x Rare Candy</li>
+                <li>2x Chaves Raras</li>
+                <li>1x Chave Épica</li>
+                <li>Pacote médio de recursos ATM</li>
+            </ul>
+
+        </div>
+
+
+        <!-- KIT MENSAL -->
+
+        <div class="beneficio-grupo">
+
+            <h3>🌟 Kit Mensal</h3>
+
+            <ul>
+                <li>64x Ultra Ball</li>
+                <li>12x Rare Candy</li>
+                <li>2x Chaves Épicas</li>
+                <li>1x Master Ball</li>
+                <li>1x Mochila Avançada</li>
+                <li>$25.000</li>
+            </ul>
+
+        </div>
+
+
+        <!-- KIT COMPETITIVO -->
+
+        <div class="beneficio-grupo">
+
+            <h3>⚔️ Kit Competitivo</h3>
+
+            <ul>
+                <li>1x Ability Patch</li>
+                <li>2x Mints</li>
+                <li>1x Silver Bottle Cap</li>
+                <li>12x EXP Candy XL</li>
+                <li>1x Power Item completo</li>
+            </ul>
+
+        </div>
+
+
+        <!-- MÁQUINAS -->
+
+        <div class="beneficio-grupo">
+
+            <h3>⚙️ Máquinas e Tecnologia</h3>
+
+            <ul>
+                <li>1x Digital Miner <strong>OU</strong> máquina avançada equivalente</li>
+                <li>1x Energy Cube Advanced</li>
+                <li>1x Máquina avançada de processamento</li>
+                <li>1x Expansão de armazenamento AE2/RS</li>
+                <li>1x Sophisticated Backpack Diamante</li>
+                <li>1x Magnet Upgrade</li>
+                <li>1x Stack Upgrade III</li>
+                <li>16x Diamond</li>
+                <li>4x Netherite Ingot</li>
+                <li>4x AllTheModium</li>
+            </ul>
+
+        </div>
+
+
+        <!-- COMPRAR -->
+
+        <button
+            class="beneficios-buy"
+            onclick="fecharBeneficios('champion'); adicionarCarrinho('VIP Champion', 34.90)"
+        >
+            🛒 Comprar VIP Champion • R$ 34,90
+        </button>
+
+    </div>
+
+</div>
+
+<!-- BENEFÍCIOS VIP MASTER -->
+
+<div class="beneficios-overlay" id="beneficios-master">
+
+    <div class="beneficios-box">
+
+        <button
+            class="beneficios-close"
+            onclick="fecharBeneficios('master')"
+        >
+            ✕
+        </button>
+
+        <h2>💎 VIP Master</h2>
+
+        <p class="beneficios-subtitle">
+            Confira todos os benefícios do VIP Master.
+        </p>
+
+        <!-- KIT DIÁRIO -->
+
+        <div class="beneficio-grupo">
+
+            <h3>🎁 Kit Diário</h3>
+
+            <ul>
+                <li>24x Ultra Ball</li>
+                <li>2x Rare Candy</li>
+                <li>Itens de cura</li>
+                <li>$2.500</li>
+            </ul>
+
+        </div>
+
+        <!-- KIT SEMANAL -->
+
+        <div class="beneficio-grupo">
+
+            <h3>📦 Kit Semanal</h3>
+
+            <ul>
+                <li>48x Ultra Ball</li>
+                <li>8x Rare Candy</li>
+                <li>2x Chaves Raras</li>
+                <li>1x Chave Épica</li>
+                <li>Grande pacote de recursos ATM</li>
+            </ul>
+
+        </div>
+
+        <!-- KIT MENSAL -->
+
+        <div class="beneficio-grupo">
+
+            <h3>🌟 Kit Mensal</h3>
+
+            <ul>
+                <li>96x Ultra Ball</li>
+                <li>20x Rare Candy</li>
+                <li>2x Master Ball</li>
+                <li>2x Chaves Épicas</li>
+                <li>1x Chave VIP/Master</li>
+                <li>1x Mochila Netherite</li>
+                <li>$40.000</li>
+            </ul>
+
+        </div>
+
+        <!-- KIT COMPETITIVO -->
+
+        <div class="beneficio-grupo">
+
+            <h3>⚔️ Kit Competitivo Supremo</h3>
+
+            <ul>
+                <li>1x Ability Patch</li>
+                <li>1x Gold Bottle Cap</li>
+                <li>2x Silver Bottle Caps</li>
+                <li>24x EXP Candy XL</li>
+                <li>1x Item de Mega Evolução</li>
+                <li>2x Mints</li>
+                <li>1x Power Item completo</li>
+            </ul>
+
+        </div>
+
+        <!-- MÁQUINAS -->
+
+        <div class="beneficio-grupo">
+
+            <h3>⚙️ Máquinas e Tecnologia</h3>
+
+            <ul>
+                <li>1x Quantum Entangloporter <strong>OU</strong> Teleporter</li>
+                <li>1x Máquina de processamento avançado</li>
+                <li>1x Sistema de armazenamento avançado</li>
+                <li>1x Máquina avançada de mineração</li>
+                <li>1x Sophisticated Backpack Netherite</li>
+                <li>1x Crafting Upgrade</li>
+                <li>1x Battery Upgrade</li>
+                <li>1x Stack Upgrade IV</li>
+                <li>24x Netherite Ingot</li>
+                <li>8x AllTheModium</li>
+            </ul>
+
+        </div>
+
+        <!-- COMPRAR -->
+
+        <button
+            class="beneficios-buy"
+            onclick="fecharBeneficios('master'); adicionarCarrinho('VIP Master', 49.90)"
+        >
+            🛒 Comprar VIP Master • R$ 49,90
+        </button>
+
+    </div>
+
+</div>
+
+    <!-- CARRINHO -->
+
+    <div class="cart-overlay" id="cart-overlay">
+
+        <div class="cart">
+
+            <button class="cart-close" onclick="fecharCarrinho()">
+                ✕
+            </button>
+
+            <h2>🛒 Seu Carrinho</h2>
+
+            <div id="cart-items"></div>
+
+            <div class="cart-total">
+
+                <span>Total</span>
+
+                <strong id="cart-total">
+                    R$ 0,00
+                </strong>
+
+            </div>
+
+            <button class="checkout-button" onclick="abrirCheckout()">
+    Finalizar compra
+</button>
+
+        </div>
+
+    </div>
+<!-- CONFIRMAÇÃO DA COMPRA -->
+
+<div class="checkout-overlay" id="checkout-overlay">
+
+    <div class="checkout">
+
+        <button class="checkout-close" onclick="fecharCheckout()">
+            ✕
+        </button>
+
+        <h2>🛒 Confirmar Compra</h2>
+
+        <p class="checkout-subtitle">
+            Confira seu pedido antes de continuar.
+        </p>
+
+
+        <!-- RESUMO DO PEDIDO -->
+
+        <div class="checkout-order">
+
+            <h3>📦 Seu Pedido</h3>
+
+            <div id="checkout-items"></div>
+
+            <div class="checkout-total">
+
+    <div class="checkout-original">
+        <span>Subtotal</span>
+        <strong id="checkout-subtotal">
+            R$ 0,00
+        </strong>
+    </div>
+
+    <div class="checkout-discount" id="checkout-discount-row" style="display: none;">
+
+        <span>🎟️ Desconto</span>
+
+        <strong id="checkout-discount">
+            - R$ 0,00
+        </strong>
+
+    </div>
+
+    <div class="checkout-coupon" id="checkout-coupon-row" style="display: none;">
+
+        <span>🏷️ Cupom</span>
+
+        <strong id="checkout-coupon">
+            -
+        </strong>
+
+    </div>
+
+    <div class="checkout-final">
+
+        <span>Total</span>
+
+        <strong id="checkout-total">
+            R$ 0,00
+        </strong>
+
+    </div>
+
+</div>
+
+
+        <!-- TERMOS -->
+
+        <div class="checkout-terms">
+
+            <h3>📜 Termos de Compra</h3>
+
+            <div class="terms-box">
+
+                <h4>🛒 TERMOS DE COMPRA — CELESTYS</h4>
+
+                <p>
+                    Ao realizar qualquer compra na loja do <strong>Celestys</strong>,
+                    o jogador declara estar ciente e de acordo com os termos descritos abaixo.
+                </p>
+
+
+                <h4>1. ATIVAÇÃO DOS PRODUTOS</h4>
+
+                <p><strong>1.1.</strong> Após a confirmação do pagamento, determinados produtos ou benefícios poderão exigir ativação dentro do servidor.</p>
+
+                <p><strong>1.2.</strong> A entrega ou ativação poderá ficar temporariamente indisponível caso exista alguma pendência relacionada ao pagamento ou às informações fornecidas durante a compra.</p>
+
+                <p><strong>1.3.</strong> Em períodos de manutenção, atualização ou instabilidade dos nossos sistemas, a ativação poderá sofrer atrasos. Nesses casos, o jogador deverá aguardar a normalização do serviço.</p>
+
+
+                <h4>2. TEMPORADAS E REINICIALIZAÇÕES</h4>
+
+                <p><strong>2.1.</strong> O Celestys poderá funcionar através de temporadas, que eventualmente podem envolver reinicialização parcial ou total do progresso dos jogadores.</p>
+
+                <p><strong>2.2.</strong> Produtos consumíveis, itens, moedas ou benefícios vinculados exclusivamente à progressão de uma temporada poderão não ser transferidos para a temporada seguinte, conforme informado nas condições do produto.</p>
+
+                <p><strong>2.3.</strong> Caso uma temporada seja encerrada, compras realizadas nos <strong>7 dias anteriores ao encerramento</strong> serão analisadas pela administração para restituição, reativação ou disponibilização do benefício correspondente, quando aplicável.</p>
+
+                <p><strong>2.4.</strong> Produtos com duração superior a 30 dias que tenham sido adquiridos ou ativados nos <strong>7 dias anteriores ao encerramento da temporada</strong> também poderão ser analisados para reativação ou compensação na temporada seguinte.</p>
+
+
+                <h4>3. PREÇOS E ALTERAÇÕES</h4>
+
+                <p><strong>3.1.</strong> Os preços, benefícios e conteúdos oferecidos pela loja poderão ser alterados ao longo do tempo.</p>
+
+                <p><strong>3.2.</strong> Qualquer alteração de preço realizada posteriormente não modifica o valor de uma compra que já tenha sido concluída.</p>
+
+                <p><strong>3.3.</strong> Sempre que possível, mudanças significativas nos benefícios dos produtos serão comunicadas previamente à comunidade.</p>
+
+
+                <h4>4. REGRAS DO SERVIDOR</h4>
+
+                <p><strong>4.1.</strong> A aquisição de VIPs, itens, moedas, kits ou qualquer outro produto da loja <strong>não concede imunidade às regras do servidor</strong>.</p>
+
+                <p><strong>4.2.</strong> Todos os jogadores estão sujeitos às mesmas regras e poderão receber punições caso cometam alguma infração, independentemente de terem realizado compras.</p>
+
+                <p><strong>4.3.</strong> Uma punição aplicada legitimamente pela administração não implica, por si só, cancelamento automático de compras anteriores ou obrigação de reembolso, respeitados os direitos previstos pela legislação aplicável.</p>
+
+
+                <h4>5. RESPONSABILIDADE PELO USO</h4>
+
+                <p><strong>5.1.</strong> O jogador é responsável pela utilização dos produtos e benefícios recebidos.</p>
+
+                <p><strong>5.2.</strong> O Celestys não se responsabiliza pela perda de itens ou benefícios decorrente de ações realizadas pelo próprio jogador, salvo quando o problema tiver sido causado diretamente por falha comprovada do servidor.</p>
+
+
+                <h4>💰 POLÍTICA DE CANCELAMENTO E REEMBOLSO</h4>
+
+
+                <h4>6. DIREITO DE ARREPENDIMENTO</h4>
+
+                <p><strong>6.1.</strong> Solicitações de cancelamento e reembolso serão analisadas de acordo com a legislação brasileira aplicável, incluindo o <strong>Código de Defesa do Consumidor (Lei nº 8.078/1990)</strong>.</p>
+
+                <p><strong>6.2.</strong> Quando aplicável, o consumidor poderá exercer o direito de arrependimento dentro do prazo legal previsto para contratações realizadas fora do estabelecimento comercial.</p>
+
+                <p><strong>6.3.</strong> A utilização, consumo ou ativação de determinados conteúdos digitais poderá afetar a possibilidade de cancelamento, observadas as regras e os direitos previstos pela legislação aplicável.</p>
+
+
+                <h4>7. PROBLEMAS COM A ENTREGA</h4>
+
+                <p><strong>7.1.</strong> Caso um produto seja pago e não seja entregue corretamente, o jogador deverá entrar em contato com o suporte do Celestys.</p>
+
+                <p><strong>7.2.</strong> Após a confirmação do problema, a administração poderá realizar a entrega correta, corrigir o benefício ou adotar outra solução adequada ao caso.</p>
+
+                <p><strong>7.3.</strong> Caso a entrega do produto se torne definitivamente impossível por responsabilidade do servidor, poderá ser realizado o reembolso correspondente, conforme aplicável.</p>
+
+
+                <h4>8. SOLICITAÇÃO DE REEMBOLSO</h4>
+
+                <p><strong>8.1.</strong> Para solicitar um cancelamento ou reembolso, o jogador deverá entrar em contato através do canal oficial de suporte do Celestys.</p>
+
+                <p><strong>8.2.</strong> Poderão ser solicitadas informações necessárias para localizar e confirmar a compra, como:</p>
+
+                <ul>
+                    <li>identificação do jogador;</li>
+                    <li>número ou comprovante da transação;</li>
+                    <li>produto adquirido;</li>
+                    <li>data da compra;</li>
+                    <li>motivo da solicitação.</li>
+                </ul>
+
+                <p><strong>8.3.</strong> Nunca solicitaremos senhas ou outras informações confidenciais da conta do jogador.</p>
+
+
+                <h4>9. DISPOSIÇÕES FINAIS</h4>
+
+                <p><strong>9.1.</strong> Estes termos poderão ser atualizados sempre que necessário para acompanhar mudanças na loja, no servidor ou na legislação aplicável.</p>
+
+                <p><strong>9.2.</strong> Nenhuma disposição destes termos tem como objetivo limitar ou excluir direitos garantidos ao consumidor pela legislação brasileira.</p>
+
+                <p><strong>9.3.</strong> Ao concluir uma compra na loja do Celestys, o jogador declara ter tido acesso a estes termos e estar ciente das condições aplicáveis ao produto adquirido.</p>
+
+            </div>
+
+        </div>
+
+<!-- CUPOM DE DESCONTO -->
+
+<div class="checkout-coupon">
+
+    <h3>🎟️ Cupom de desconto</h3>
+
+    <div class="coupon-input-area">
+
+        <input
+            type="text"
+            id="coupon-input"
+            placeholder="Digite seu cupom"
+            autocomplete="off"
+        >
+
+        <button
+            type="button"
+            onclick="aplicarCupom()"
+        >
+            Aplicar
+        </button>
+
+    </div>
+
+    <p id="coupon-message"></p>
+
+</div>
+
+        <!-- CONFIRMAÇÕES -->
+
+        <div class="checkout-confirmations">
+
+            <label>
+                <input type="checkbox" id="accept-terms" onchange="verificarCheckout()">
+                <span>Li e concordo com os Termos de Compra.</span>
+            </label>
+
+            <label>
+                <input type="checkbox" id="confirm-age" onchange="verificarCheckout()">
+                <span>Confirmo que sou maior de idade.</span>
+            </label>
+
+        </div>
+
+
+        <!-- BOTÕES -->
+
+        <div class="checkout-actions">
+
+            <button class="back-cart-button" onclick="voltarCarrinho()">
+                ← Voltar ao carrinho
+            </button>
+
+            <button
+    class="payment-button"
+    id="payment-button"
+    type="button"
+    onclick="continuarPagamento()"
+    disabled
+>
+    💳 Continuar para pagamento
+</button>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- PAGAMENTO -->
+
+<div class="payment-overlay" id="payment-overlay">
+
+    <div class="payment-box">
+
+        <button class="payment-close" onclick="fecharPagamento()">
+            ✕
+        </button>
+
+        <h2>💳 Pagamento</h2>
+
+        <p class="payment-subtitle">
+            Finalize sua compra no Celestys.
+        </p>
+
+        <div class="payment-summary">
+
+            <h3>📦 Resumo da compra</h3>
+
+            <div id="payment-items"></div>
+
+            <div class="payment-total">
+
+                <span>Total</span>
+
+                <strong id="payment-total">
+                    R$ 0,00
+                </strong>
+
+            </div>
+
+        </div>
+
+        <div class="payment-player">
+
+            <label for="player-name">
+                🎮 Nome no servidor
+            </label>
+
+            <input
+                type="text"
+                id="player-name"
+                placeholder="Digite seu nick"
+            >
+
+        </div>
+
+        <div class="payment-method">
+
+    <h3>💜 PIX</h3>
+
+    <p>
+        Faça o pagamento através do PIX.
+    </p>
+
+    <div class="pix-area">
+
+    <h4>📱 Escaneie o QR Code</h4>
+
+    <div id="pix-qrcode"></div>
+
+    <p id="pix-message">
+        Valor do PIX: R$ 0,00
+    </p>
+
+    <div class="pix-code-box">
+
+        <div class="pix-code-text" id="pix-code">
+            PIX será gerado aqui
+        </div>
+
+        <button
+            type="button"
+            onclick="copiarPix()"
+        >
+            📋 Copiar PIX
+        </button>
+
+    </div>
+
+</div>
+
+        </div>
+
+        <div class="payment-status">
+            🟡 Aguardando pagamento
+        </div>
+
+        <button 
+    class="payment-confirm-button"
+    type="button"
+    onclick="confirmarPagamento(event)"
+>
+    ✅ Confirmar pagamento
+</button>
+
+    </div>
+
+</div>
+
+<script>
+
+    let carrinho = [];
+
+    /* ========================================
+   CUPOM DE DESCONTO
+   ======================================== */
+
+const cupons = {
+
+    "CELESTYS10": {
+        desconto: 10,
+        valorMinimo: 0,
+        limiteUsos: 100,
+        validade: "2026-12-31"
+    },
+
+    "BEMVINDO": {
+        desconto: 5,
+        valorMinimo: 0,
+        limiteUsos: 500,
+        validade: "2026-12-31"
+    },
+
+    "VIP20": {
+        desconto: 20,
+        valorMinimo: 30,
+        limiteUsos: 50,
+        validade: "2026-10-31"
+    }
+
+};
+
+let cupomAplicado = null;
+let descontoCupom = 0;
+
+function aplicarCupom() {
+
+    const input = document.getElementById("coupon-input");
+    const mensagem = document.getElementById("coupon-message");
+
+    if (!input || !mensagem) {
+        return;
+    }
+
+    const codigo = input.value.trim().toUpperCase();
+
+    // Nenhum cupom digitado
+    if (codigo === "") {
+
+        mensagem.textContent = "⚠️ Digite um cupom.";
+
+        cupomAplicado = null;
+        descontoCupom = 0;
+
+        atualizarCheckout();
+
+        return;
+    }
+
+    // Cupom não existe
+    if (!cupons[codigo]) {
+
+        mensagem.textContent = "❌ Cupom inválido.";
+
+        cupomAplicado = null;
+        descontoCupom = 0;
+
+        atualizarCheckout();
+
+        return;
+    }
+
+    const cupom = cupons[codigo];
+
+    // Verifica validade
+    const hoje = new Date();
+    const validade = new Date(cupom.validade + "T23:59:59");
+
+    if (hoje > validade) {
+
+        mensagem.textContent = "⏰ Este cupom expirou.";
+
+        cupomAplicado = null;
+        descontoCupom = 0;
+
+        atualizarCheckout();
+
+        return;
+    }
+
+    // Calcula o total atual
+    let total = 0;
+
+    carrinho.forEach((item) => {
+        total += item.preco;
+    });
+
+    // Verifica valor mínimo
+    if (total < cupom.valorMinimo) {
+
+        mensagem.textContent =
+            "💰 Compra mínima de R$ " +
+            cupom.valorMinimo.toFixed(2).replace(".", ",") +
+            " para usar este cupom.";
+
+        cupomAplicado = null;
+        descontoCupom = 0;
+
+        atualizarCheckout();
+
+        return;
+    }
+
+    // Verifica limite de usos
+    if (cupom.usos >= cupom.limiteUsos) {
+
+        mensagem.textContent =
+            "🚫 Este cupom atingiu o limite de usos.";
+
+        cupomAplicado = null;
+        descontoCupom = 0;
+
+        atualizarCheckout();
+
+        return;
+    }
+
+    // Aplica o cupom
+    cupomAplicado = codigo;
+    descontoCupom = cupom.desconto;
+
+    mensagem.textContent =
+        "🎉 Cupom aplicado! " +
+        cupom.desconto +
+        "% de desconto.";
+
+    atualizarCheckout();
+}
+        function adicionarCarrinho(nome, preco) {
+
+            carrinho.push({
+                nome: nome,
+                preco: preco
+            });
+
+            atualizarCarrinho();
+
+            abrirCarrinho();
+        }
+
+
+        function atualizarCarrinho() {
+
+            const items = document.getElementById("cart-items");
+            const count = document.getElementById("cart-count");
+            const totalElement = document.getElementById("cart-total");
+
+            items.innerHTML = "";
+
+            let total = 0;
+
+
+            carrinho.forEach((produto, index) => {
+
+                total += produto.preco;
+
+                const item = document.createElement("div");
+
+                item.className = "cart-item";
+
+                item.innerHTML = `
+                    <div>
+                        <strong>${produto.nome}</strong>
+                        <span>R$ ${produto.preco.toFixed(2).replace(".", ",")}</span>
+                    </div>
+
+                    <button onclick="removerCarrinho(${index})">
+                        ✕
+                    </button>
+                `;
+
+                items.appendChild(item);
+
+            });
+
+
+            count.textContent = carrinho.length;
+
+            totalElement.textContent =
+                "R$ " + total.toFixed(2).replace(".", ",");
+        }
+
+
+        function removerCarrinho(index) {
+
+            carrinho.splice(index, 1);
+
+            atualizarCarrinho();
+        }
+
+
+        function abrirCarrinho() {
+
+            document
+                .getElementById("cart-overlay")
+                .classList.add("active");
+
+        }
+
+
+        function fecharCarrinho() {
+
+            document
+                .getElementById("cart-overlay")
+                .classList.remove("active");
+
+        }
+
+        let quantidadeTerreno = 10;
+
+function alterarTerreno(valor) {
+
+    quantidadeTerreno += valor * 10;
+
+    if (quantidadeTerreno < 10) {
+        quantidadeTerreno = 10;
+    }
+
+    const preco = (quantidadeTerreno / 10) * 5;
+
+    document.getElementById("terreno-quantidade").textContent =
+        quantidadeTerreno;
+
+    document.getElementById("terreno-preco").textContent =
+        "R$ " + preco.toFixed(2).replace(".", ",");
+}
+
+
+function comprarTerreno() {
+
+    const preco = (quantidadeTerreno / 10) * 5;
+
+    adicionarCarrinho(
+        "Aumento de Terreno - " + quantidadeTerreno + " unidades",
+        preco
+    );
+
+}
+
+let quantidadeChunk = 1;
+
+function alterarChunk(valor) {
+
+    quantidadeChunk += valor;
+
+    if (quantidadeChunk < 1) {
+        quantidadeChunk = 1;
+    }
+
+    const preco = quantidadeChunk * 15;
+
+    document.getElementById("chunk-quantidade").textContent =
+        quantidadeChunk;
+
+    document.getElementById("chunk-preco").textContent =
+        "R$ " + preco.toFixed(2).replace(".", ",");
+}
+
+
+function comprarChunk() {
+
+    const preco = quantidadeChunk * 15;
+
+    adicionarCarrinho(
+        "Chunk Loader - " + quantidadeChunk + "x",
+        preco
+    );
+
+}
+const quantidadesChaves = {
+    lendario1: 1,
+    lendario2: 1,
+    lendario3: 1,
+    lendario4: 1,
+    lendario5: 1,
+    lendario6: 1,
+    lendario8: 1,
+    lendario9: 1,
+    paradox: 1,
+    ultrabeast: 1
+};
+
+const precosChaves = {
+    lendario1: 9.99,
+    lendario2: 14.99,
+    lendario3: 17.99,
+    lendario4: 11.99,
+    lendario5: 17.99,
+    lendario6: 17.99,
+    lendario8: 19.99,
+    lendario9: 31.99,
+    paradox: 5.99,
+    ultrabeast: 18.99
+};
+
+function alterarChave(tipo, valor) {
+
+    quantidadesChaves[tipo] += valor;
+
+    if (quantidadesChaves[tipo] < 1) {
+        quantidadesChaves[tipo] = 1;
+    }
+
+    const quantidade = quantidadesChaves[tipo];
+    const preco = precosChaves[tipo] * quantidade;
+
+    document.getElementById(tipo + "-quantidade").textContent = quantidade;
+
+    document.getElementById(tipo + "-preco").textContent =
+        "R$ " + preco.toFixed(2).replace(".", ",");
+}
+
+function comprarChave(nome, precoUnitario, tipo) {
+
+    const quantidade = quantidadesChaves[tipo];
+    const precoTotal = precoUnitario * quantidade;
+
+    adicionarCarrinho(
+        nome + " - " + quantidade + "x",
+        precoTotal
+    );
+}
+const quantidadesPacotes = {
+    maquinas: 5,
+    shiny: 5
+};
+
+const precosPacotes = {
+    maquinas: 4.99,
+    shiny: 2.99
+};
+
+function alterarPacote(tipo, valor) {
+
+    quantidadesPacotes[tipo] += valor * 5;
+
+    if (quantidadesPacotes[tipo] < 5) {
+        quantidadesPacotes[tipo] = 5;
+    }
+
+    const quantidade = quantidadesPacotes[tipo];
+
+    // Cada pacote possui 5 chaves
+    const pacotes = quantidade / 5;
+
+    const preco = precosPacotes[tipo] * pacotes;
+
+    document.getElementById(tipo + "-quantidade").textContent =
+        quantidade;
+
+    document.getElementById(tipo + "-preco").textContent =
+        "R$ " + preco.toFixed(2).replace(".", ",");
+}
+
+
+function comprarPacote(nome, precoPacote, tipo) {
+
+    const quantidade = quantidadesPacotes[tipo];
+
+    const pacotes = quantidade / 5;
+
+    const precoTotal = precoPacote * pacotes;
+
+    adicionarCarrinho(
+        nome + " - " + quantidade + "x",
+        precoTotal
+    );
+
+}
+
+/* ========================================
+   CHECKOUT
+   ======================================== */
+
+function abrirCheckout() {
+
+    if (carrinho.length === 0) {
+        alert("Seu carrinho está vazio!");
+        return;
+    }
+
+    document.getElementById("cart-overlay").classList.remove("active");
+
+    atualizarCheckout();
+
+    document.getElementById("checkout-overlay").classList.add("active");
+}
+
+
+function fecharCheckout() {
+
+    document.getElementById("checkout-overlay").classList.remove("active");
+
+}
+
+
+function voltarCarrinho() {
+
+    fecharCheckout();
+
+    document.getElementById("cart-overlay").classList.add("active");
+
+}
+
+function atualizarCheckout() {
+
+    const checkoutItems =
+        document.getElementById("checkout-items");
+
+    const checkoutTotal =
+        document.getElementById("checkout-total");
+
+    const checkoutSubtotal =
+        document.getElementById("checkout-subtotal");
+
+    const checkoutDiscount =
+        document.getElementById("checkout-discount");
+
+    const checkoutDiscountRow =
+        document.getElementById("checkout-discount-row");
+
+    const checkoutCoupon =
+        document.getElementById("checkout-coupon");
+
+    const checkoutCouponRow =
+        document.getElementById("checkout-coupon-row");
+
+
+    if (!checkoutItems || !checkoutTotal) {
+        return;
+    }
+
+
+    checkoutItems.innerHTML = "";
+
+    let subtotal = 0;
+
+
+    carrinho.forEach((item) => {
+
+        subtotal += item.preco;
+
+        const div = document.createElement("div");
+
+        div.className = "cart-item";
+
+        div.innerHTML = `
+            <div>
+                <strong>${item.nome}</strong>
+
+                <span>
+                    R$ ${item.preco.toFixed(2).replace(".", ",")}
+                </span>
+            </div>
+        `;
+
+        checkoutItems.appendChild(div);
+
+    });
+
+
+    // Calcula desconto
+
+    let valorDesconto = 0;
+
+    if (cupomAplicado && descontoCupom > 0) {
+
+        valorDesconto =
+            subtotal * (descontoCupom / 100);
+
+    }
+
+
+    // Calcula total final
+
+    const totalFinal =
+        subtotal - valorDesconto;
+
+
+    // Subtotal
+
+    if (checkoutSubtotal) {
+
+        checkoutSubtotal.textContent =
+            "R$ " +
+            subtotal.toFixed(2).replace(".", ",");
+
+    }
+
+
+    // Desconto
+
+    if (
+        checkoutDiscount &&
+        checkoutDiscountRow
+    ) {
+
+        if (valorDesconto > 0) {
+
+            checkoutDiscount.textContent =
+                "- R$ " +
+                valorDesconto
+                    .toFixed(2)
+                    .replace(".", ",");
+
+            checkoutDiscountRow.style.display =
+                "flex";
+
+        } else {
+
+            checkoutDiscountRow.style.display =
+                "none";
+
+        }
+
+    }
+
+
+    // Cupom
+
+    if (
+        checkoutCoupon &&
+        checkoutCouponRow
+    ) {
+
+        if (cupomAplicado) {
+
+            checkoutCoupon.textContent =
+                cupomAplicado +
+                " (" +
+                descontoCupom +
+                "%)";
+
+            checkoutCouponRow.style.display =
+                "flex";
+
+        } else {
+
+            checkoutCouponRow.style.display =
+                "none";
+
+        }
+
+    }
+
+
+    // Total final
+
+    checkoutTotal.textContent =
+        "R$ " +
+        totalFinal.toFixed(2).replace(".", ",");
+}
+
+function verificarCheckout() {
+
+    const termos = document.getElementById("accept-terms");
+    const idade = document.getElementById("confirm-age");
+    const botao = document.getElementById("payment-button");
+
+    if (!termos || !idade || !botao) {
+        return;
+    }
+
+    botao.disabled = !(termos.checked && idade.checked);
+}
+function continuarPagamento() {
+
+    console.log("✅ Continuar pagamento clicado!");
+
+    const termos = document.getElementById("accept-terms");
+    const idade = document.getElementById("confirm-age");
+
+    if (!termos || !idade) {
+        alert("Erro: confirmações não encontradas.");
+        return;
+    }
+
+    if (!termos.checked || !idade.checked) {
+        alert("Você precisa aceitar os termos e confirmar sua maioridade.");
+        return;
+    }
+
+    const checkout = document.getElementById("checkout-overlay");
+    const pagamento = document.getElementById("payment-overlay");
+
+    if (!checkout || !pagamento) {
+        alert("Erro: tela de pagamento não encontrada.");
+        return;
+    }
+
+    atualizarPagamento();
+
+    checkout.classList.remove("active");
+    pagamento.classList.add("active");
+
+    setTimeout(() => {
+        gerarQRCodePix();
+    }, 100);
+
+    console.log("✅ Pagamento aberto!");
+}
+
+    // Atualiza o resumo e o PIX
+ function atualizarPagamento() {
+
+    const paymentItems =
+        document.getElementById("payment-items");
+
+    const paymentTotal =
+        document.getElementById("payment-total");
+
+    if (!paymentItems || !paymentTotal) {
+        console.error("Elementos do pagamento não encontrados.");
+        return;
+    }
+
+    paymentItems.innerHTML = "";
+
+    let subtotal = 0;
+
+    carrinho.forEach((item) => {
+
+        subtotal += item.preco;
+
+        const div = document.createElement("div");
+
+        div.className = "cart-item";
+
+        div.innerHTML = `
+            <div>
+                <strong>${item.nome}</strong>
+
+                <span>
+                    R$ ${item.preco.toFixed(2).replace(".", ",")}
+                </span>
+            </div>
+        `;
+
+        paymentItems.appendChild(div);
+
+    });
+
+
+    // Calcula o desconto do cupom
+
+    let valorDesconto = 0;
+
+    if (cupomAplicado && descontoCupom > 0) {
+
+        valorDesconto =
+            subtotal * (descontoCupom / 100);
+
+    }
+
+
+    // Total final
+
+    const totalFinal =
+        subtotal - valorDesconto;
+
+
+    // Mostra o total com desconto
+
+    paymentTotal.textContent =
+        "R$ " +
+        totalFinal.toFixed(2).replace(".", ",");
+
+
+    // Atualiza o PIX com o valor COM desconto
+
+    atualizarPix(totalFinal);
+}
+
+const CHAVE_PIX = "6ac81b2f-c009-471b-ae83-f2a00895c36e";
+function gerarCRC16(payload) {
+
+    let crc = 0xFFFF;
+
+    for (let i = 0; i < payload.length; i++) {
+
+        crc ^= payload.charCodeAt(i) << 8;
+
+        for (let j = 0; j < 8; j++) {
+
+            if ((crc & 0x8000) !== 0) {
+                crc = (crc << 1) ^ 0x1021;
+            } else {
+                crc = crc << 1;
+            }
+
+            crc &= 0xFFFF;
+        }
+    }
+
+    return crc.toString(16).toUpperCase().padStart(4, "0");
+}
+
+
+function campoPix(id, valor) {
+
+    return (
+        id +
+        String(valor.length).padStart(2, "0") +
+        valor
+    );
+
+}
+
+function gerarPayloadPix(valor) {
+
+    const valorFormatado = Number(valor).toFixed(2);
+
+    const merchantAccount =
+        campoPix("00", "br.gov.bcb.pix") +
+        campoPix("01", CHAVE_PIX);
+
+    const additionalData =
+        campoPix("05", "***");
+
+    const payloadSemCRC =
+
+        campoPix("00", "01") +
+
+        campoPix("26", merchantAccount) +
+
+        campoPix("52", "0000") +
+
+        campoPix("53", "986") +
+
+        campoPix("54", valorFormatado) +
+
+        campoPix("58", "BR") +
+
+        campoPix("59", "CELESTYS") +
+
+        campoPix("60", "SALVADOR") +
+
+        campoPix("62", additionalData) +
+
+        "6304";
+
+    const crc = gerarCRC16(payloadSemCRC);
+
+    return payloadSemCRC + crc;
+}
+
+function atualizarPix(valor) {
+
+    const valorPix = valor.toFixed(2);
+
+    const payloadPix = gerarPayloadPix(valorPix);
+
+    document.getElementById("pix-code").textContent =
+        payloadPix;
+
+    document.getElementById("pix-message").textContent =
+        "Valor do PIX: R$ " +
+        valorPix.replace(".", ",");
+}
+
+function fecharPagamento() {
+
+    document
+        .getElementById("payment-overlay")
+        .classList.remove("active");
+
+}
+
+function gerarChave() {
+
+    const caracteres = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+
+    function bloco() {
+
+        let resultado = "";
+
+        for (let i = 0; i < 4; i++) {
+
+            resultado +=
+                caracteres.charAt(
+                    Math.floor(Math.random() * caracteres.length)
+                );
+
+        }
+
+        return resultado;
+    }
+
+    return "CEL-" + bloco() + "-" + bloco() + "-" + bloco();
+}
+
+function gerarIdPedido() {
+
+    const caracteres = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+
+    let resultado = "";
+
+    for (let i = 0; i < 10; i++) {
+
+        resultado += caracteres.charAt(
+            Math.floor(Math.random() * caracteres.length)
+        );
+
+    }
+
+    return "CEL-" + resultado;
+}
+
+function confirmarPagamento() {
+
+    const nick = document
+        .getElementById("player-name")
+        .value
+        .trim();
+
+    if (nick === "") {
+
+        alert(
+            "🎮 Digite seu nick do servidor antes de continuar."
+        );
+
+        return;
+    }
+
+    if (carrinho.length === 0) {
+
+        alert(
+            "🛒 Seu carrinho está vazio."
+        );
+
+        return;
+    }
+
+    let total = 0;
+
+    carrinho.forEach((item) => {
+        total += item.preco;
+    });
+
+    const primeiraCompra = carrinho[0];
+
+    const chave = gerarChave(primeiraCompra.nome);
+
+    const pedido = {
+
+        id: gerarIdPedido(),
+
+        nick: nick,
+
+        produtos: [...carrinho],
+
+        total: total,
+
+        chave: chave,
+
+        status: "Aguardando pagamento",
+
+        data: new Date().toLocaleString("pt-BR")
+
+    };
+
+    console.log("PEDIDO CRIADO:", pedido);
+
+
+    // Preenche a tela de sucesso
+
+    document.getElementById("success-order-id").textContent =
+        pedido.id;
+
+    document.getElementById("success-nick").textContent =
+        pedido.nick;
+
+    document.getElementById("success-total").textContent =
+        "R$ " +
+        pedido.total.toFixed(2).replace(".", ",");
+
+    document.getElementById("success-key").textContent =
+        pedido.chave;
+
+
+    // Fecha pagamento
+
+    document
+        .getElementById("payment-overlay")
+        .classList.remove("active");
+
+
+    // Abre pedido concluído
+
+    document
+        .getElementById("success-overlay")
+        .classList.add("active");
+
+}
+function copiarChave() {
+
+    const chave = document
+        .getElementById("success-key")
+        .textContent
+        .trim();
+
+    if (!chave || chave === "---") {
+
+        alert("A chave ainda não foi gerada.");
+
+        return;
+    }
+
+    navigator.clipboard.writeText(chave);
+
+    alert("✅ Chave copiada!");
+}
+
+
+function fecharPedido() {
+
+    document
+        .getElementById("success-overlay")
+        .classList.remove("active");
+
+    carrinho = [];
+
+    atualizarCarrinho();
+
+    document.getElementById("player-name").value = "";
+
+}
+
+</script>
+
+<!-- PEDIDO CONCLUÍDO -->
+
+<div class="success-overlay" id="success-overlay">
+
+    <div class="success-box">
+
+        <div class="success-icon">
+            ✅
+        </div>
+
+        <h2>Pedido registrado!</h2>
+
+        <p class="success-subtitle">
+            Seu pedido foi criado com sucesso.
+        </p>
+
+        <div class="success-order">
+
+            <div class="success-row">
+                <span>📦 Pedido</span>
+                <strong id="success-order-id">---</strong>
+            </div>
+
+            <div class="success-row">
+                <span>🎮 Nick</span>
+                <strong id="success-nick">---</strong>
+            </div>
+
+            <div class="success-row">
+                <span>💰 Total</span>
+                <strong id="success-total">R$ 0,00</strong>
+            </div>
+
+            <div class="success-row">
+                <span>🟡 Status</span>
+                <strong>Aguardando pagamento</strong>
+            </div>
+
+        </div>
+
+        <div class="success-key">
+
+            <span>🔑 Sua chave</span>
+
+            <div class="key-display">
+
+                <strong id="success-key">
+                    ---
+                </strong>
+
+                <button
+                    type="button"
+                    onclick="copiarChave()"
+                >
+                    📋 Copiar
+                </button>
+
+            </div>
+
+            <small>
+                Guarde esta chave. Ela será utilizada
+                para resgatar seu produto no servidor.
+            </small>
+
+        </div>
+
+        <button
+            class="success-close-button"
+            type="button"
+            onclick="fecharPedido()"
+        >
+            🏠 Voltar para a loja
+        </button>
+
+    </div>
+
+</div>
+
+<script>
+
+function gerarQRCodePix() {
+
+    const pixElement =
+        document.getElementById("pix-code");
+
+    const qrContainer =
+        document.getElementById("pix-qrcode");
+
+    if (!pixElement || !qrContainer) {
+        console.error("❌ Elementos do QR Code não encontrados.");
+        return;
+    }
+
+    const pix =
+        pixElement.textContent.trim();
+
+    if (
+        pix === "" ||
+        pix === "PIX será gerado aqui"
+    ) {
+        console.error("❌ Código PIX vazio.");
+        return;
+    }
+
+    if (typeof QRCode === "undefined") {
+        console.error("❌ Biblioteca QRCode não carregada.");
+        return;
+    }
+
+    qrContainer.innerHTML = "";
+
+    new QRCode(qrContainer, {
+
+        text: pix,
+
+        width: 300,
+
+        height: 300,
+
+        correctLevel: QRCode.CorrectLevel.H
+
+    });
+
+    console.log("✅ QR Code PIX gerado!");
+    console.log("PIX:", pix);
+}
+
+function copiarPix() {
+
+    const pix = document
+        .getElementById("pix-code")
+        .textContent
+        .trim();
+
+    if (!pix || pix === "PIX será gerado aqui") {
+        alert("❌ O código PIX ainda não foi gerado.");
+        return;
+    }
+
+    navigator.clipboard.writeText(pix)
+        .then(() => {
+            alert("✅ PIX copiado!");
+        })
+        .catch(() => {
+            alert("❌ Não foi possível copiar o PIX.");
+        });
+}
+/* ========================================
+   BENEFÍCIOS DOS VIPs
+   ======================================== */
+
+function abrirBeneficios(vip) {
+
+    const elemento =
+        document.getElementById("beneficios-" + vip);
+
+    if (!elemento) {
+        console.error("Benefícios não encontrados:", vip);
+        return;
+    }
+
+    elemento.classList.add("active");
+}
+
+
+function fecharBeneficios(vip) {
+
+    const elemento =
+        document.getElementById("beneficios-" + vip);
+
+    if (!elemento) {
+        return;
+    }
+
+    elemento.classList.remove("active");
+}
+</script>
+
+</body>
+</html>
