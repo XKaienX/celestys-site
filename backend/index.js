@@ -28,14 +28,122 @@ const db = new Pool({
     }
 });
 
-db.query("SELECT NOW()")
-    .then(() => {
+async function inicializarBanco() {
+    try {
+        await db.query(`
+            CREATE TABLE IF NOT EXISTS pedidos (
+                id BIGSERIAL PRIMARY KEY,
+
+                nick VARCHAR(32) NOT NULL,
+
+                external_reference VARCHAR(100) UNIQUE NOT NULL,
+
+                preference_id VARCHAR(100),
+
+                payment_id VARCHAR(100) UNIQUE,
+
+                valor NUMERIC(10,2) NOT NULL,
+
+                desconto NUMERIC(10,2) DEFAULT 0,
+
+                valor_final NUMERIC(10,2) NOT NULL,
+
+                cupom VARCHAR(50),
+
+                status VARCHAR(30) NOT NULL DEFAULT 'pending',
+
+                entrega_status VARCHAR(30) NOT NULL DEFAULT 'pendente',
+
+                entregue BOOLEAN NOT NULL DEFAULT FALSE,
+
+                created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+
+                updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+            );
+        `);
+
+        await db.query(`
+            CREATE TABLE IF NOT EXISTS pedido_itens (
+                id BIGSERIAL PRIMARY KEY,
+
+                pedido_id BIGINT NOT NULL,
+
+                produto_nome TEXT NOT NULL,
+
+                quantidade INTEGER NOT NULL DEFAULT 1,
+
+                valor_unitario NUMERIC(10,2) NOT NULL,
+
+                valor_total NUMERIC(10,2) NOT NULL,
+
+                entregue BOOLEAN NOT NULL DEFAULT FALSE,
+
+                entregue_em TIMESTAMPTZ,
+
+                created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+
+                CONSTRAINT fk_pedido
+                    FOREIGN KEY (pedido_id)
+                    REFERENCES pedidos(id)
+                    ON DELETE CASCADE
+            );
+        `);
+
+        await db.query(`
+            CREATE TABLE IF NOT EXISTS cupons (
+                id BIGSERIAL PRIMARY KEY,
+
+                codigo VARCHAR(50) UNIQUE NOT NULL,
+
+                desconto_percentual NUMERIC(5,2) DEFAULT 0,
+
+                desconto_fixo NUMERIC(10,2) DEFAULT 0,
+
+                ativo BOOLEAN NOT NULL DEFAULT TRUE,
+
+                uso_maximo INTEGER,
+
+                usos_realizados INTEGER NOT NULL DEFAULT 0,
+
+                validade TIMESTAMPTZ,
+
+                created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+            );
+        `);
+
+        await db.query(`
+            CREATE INDEX IF NOT EXISTS idx_pedidos_nick
+            ON pedidos(nick);
+        `);
+
+        await db.query(`
+            CREATE INDEX IF NOT EXISTS idx_pedidos_status
+            ON pedidos(status);
+        `);
+
+        await db.query(`
+            CREATE INDEX IF NOT EXISTS idx_pedidos_entrega
+            ON pedidos(entrega_status);
+        `);
+
+        await db.query(`
+            CREATE INDEX IF NOT EXISTS idx_pedido_itens_pedido
+            ON pedido_itens(pedido_id);
+        `);
+
         console.log("🗄️ PostgreSQL conectado!");
-    })
-    .catch((error) => {
-        console.error("❌ Erro ao conectar ao PostgreSQL:");
+        console.log("📦 Tabelas verificadas/criadas!");
+        console.log("🛒 Sistema de pedidos pronto!");
+        console.log("📋 Sistema de itens pronto!");
+        console.log("🎟️ Sistema de cupons pronto!");
+
+    } catch (error) {
+        console.error("❌ Erro ao inicializar o banco de dados:");
         console.error(error);
-    });
+    }
+}
+
+inicializarBanco();
 
 // ========================================
 // MERCADO PAGO
