@@ -8,7 +8,6 @@
     <title>Loja | Celestys</title>
 
     <link rel="stylesheet" href="loja.css">
-    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 </head>
 
 <body>
@@ -585,47 +584,6 @@
     </div>
 
 </section>
-
-<!-- MÁQUINAS -->
-
-<div class="store-card">
-
-    <div class="store-icon">⚙️</div>
-
-    <h3>Chaves de Máquinas</h3>
-
-    <span class="store-level">5 CHAVES</span>
-
-    <p class="product-description">
-        Pacote com 5 chaves de máquinas.
-    </p>
-
-    <div class="store-price" id="maquinas-preco">
-        R$ 4,99
-    </div>
-
-    <div class="quantity-selector">
-
-        <button type="button" onclick="alterarPacote('maquinas', -1)">
-            −
-        </button>
-
-        <span id="maquinas-quantidade">
-            5
-        </span>
-
-        <button type="button" onclick="alterarPacote('maquinas', 1)">
-            +
-        </button>
-
-    </div>
-
-    <button onclick="comprarPacote('Chaves de Máquinas', 4.99, 'maquinas')">
-        🛒 Comprar
-    </button>
-
-</div>
-
 
 <!-- SHINY -->
 
@@ -1542,7 +1500,7 @@
         <h2>💳 Pagamento</h2>
 
         <p class="payment-subtitle">
-            Finalize sua compra no Celestys.
+            Confira seu pedido e continue para o Mercado Pago.
         </p>
 
         <div class="payment-summary">
@@ -1573,58 +1531,33 @@
                 type="text"
                 id="player-name"
                 placeholder="Digite seu nick"
+                maxlength="32"
             >
 
         </div>
 
         <div class="payment-method">
 
-    <h3>💜 PIX</h3>
+            <h3>💳 Mercado Pago</h3>
 
-    <p>
-        Faça o pagamento através do PIX.
-    </p>
-
-    <div class="pix-area">
-
-    <h4>📱 Escaneie o QR Code</h4>
-
-    <div id="pix-qrcode"></div>
-
-    <p id="pix-message">
-        Valor do PIX: R$ 0,00
-    </p>
-
-    <div class="pix-code-box">
-
-        <div class="pix-code-text" id="pix-code">
-            PIX será gerado aqui
-        </div>
-
-        <button
-            type="button"
-            onclick="copiarPix()"
-        >
-            📋 Copiar PIX
-        </button>
-
-    </div>
-
-</div>
+            <p>
+                Você será redirecionado para o Mercado Pago
+                para realizar o pagamento com segurança.
+            </p>
 
         </div>
 
         <div class="payment-status">
-            🟡 Aguardando pagamento
+            🔵 Pagamento seguro pelo Mercado Pago
         </div>
 
-        <button 
-    class="payment-confirm-button"
-    type="button"
-    onclick="confirmarPagamento(event)"
->
-    ✅ Confirmar pagamento
-</button>
+        <button
+            class="payment-confirm-button"
+            type="button"
+            onclick="confirmarPagamento()"
+        >
+            💳 Ir para o Mercado Pago
+        </button>
 
     </div>
 
@@ -1744,19 +1677,7 @@ function aplicarCupom() {
         return;
     }
 
-    // Verifica limite de usos
-    if (cupom.usos >= cupom.limiteUsos) {
-
-        mensagem.textContent =
-            "🚫 Este cupom atingiu o limite de usos.";
-
-        cupomAplicado = null;
-        descontoCupom = 0;
-
-        atualizarCheckout();
-
-        return;
-    }
+    // O limite de usos é controlado pelo backend/banco de dados.
 
     // Aplica o cupom
     cupomAplicado = codigo;
@@ -1769,18 +1690,60 @@ function aplicarCupom() {
 
     atualizarCheckout();
 }
+        function formatarMoeda(valor) {
+            return Number(valor).toFixed(2).replace(".", ",");
+        }
+
+        function escaparHTML(texto) {
+            return String(texto)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
         function adicionarCarrinho(nome, preco) {
 
+            const precoNumerico = Number(preco);
+
+            if (!nome || !Number.isFinite(precoNumerico) || precoNumerico <= 0) {
+                alert("❌ Não foi possível adicionar este produto ao carrinho.");
+                return;
+            }
+
             carrinho.push({
-                nome: nome,
-                preco: preco
+                nome: String(nome),
+                preco: Number(precoNumerico.toFixed(2))
             });
 
             atualizarCarrinho();
-
             abrirCarrinho();
         }
 
+        function agruparCarrinho() {
+            const grupos = new Map();
+
+            carrinho.forEach((produto, index) => {
+                const chave = produto.nome;
+
+                if (!grupos.has(chave)) {
+                    grupos.set(chave, {
+                        nome: produto.nome,
+                        precoTotal: 0,
+                        quantidade: 0,
+                        indices: []
+                    });
+                }
+
+                const grupo = grupos.get(chave);
+                grupo.precoTotal += Number(produto.preco) || 0;
+                grupo.quantidade += 1;
+                grupo.indices.push(index);
+            });
+
+            return Array.from(grupos.values());
+        }
 
         function atualizarCarrinho() {
 
@@ -1788,46 +1751,57 @@ function aplicarCupom() {
             const count = document.getElementById("cart-count");
             const totalElement = document.getElementById("cart-total");
 
+            if (!items || !count || !totalElement) return;
+
             items.innerHTML = "";
 
             let total = 0;
+            const grupos = agruparCarrinho();
 
+            grupos.forEach((produto, grupoIndex) => {
 
-            carrinho.forEach((produto, index) => {
-
-                total += produto.preco;
+                total += produto.precoTotal;
 
                 const item = document.createElement("div");
-
                 item.className = "cart-item";
+
+                const quantidadeTexto = produto.quantidade > 1
+                    ? ` <small style="opacity:.75;">x${produto.quantidade}</small>`
+                    : "";
 
                 item.innerHTML = `
                     <div>
-                        <strong>${produto.nome}</strong>
-                        <span>R$ ${produto.preco.toFixed(2).replace(".", ",")}</span>
+                        <strong>${escaparHTML(produto.nome)}${quantidadeTexto}</strong>
+                        <span>R$ ${formatarMoeda(produto.precoTotal)}</span>
                     </div>
 
-                    <button onclick="removerCarrinho(${index})">
+                    <button type="button" onclick="removerGrupoDoCarrinho(${grupoIndex})" aria-label="Remover produto">
                         ✕
                     </button>
                 `;
 
                 items.appendChild(item);
-
             });
 
-
             count.textContent = carrinho.length;
-
-            totalElement.textContent =
-                "R$ " + total.toFixed(2).replace(".", ",");
+            totalElement.textContent = "R$ " + formatarMoeda(total);
         }
 
+        function removerGrupoDoCarrinho(grupoIndex) {
+            const grupos = agruparCarrinho();
+            const grupo = grupos[grupoIndex];
+
+            if (!grupo || !grupo.indices.length) return;
+
+            // Remove apenas uma unidade do grupo, sem alterar o restante da compra.
+            const indexParaRemover = grupo.indices[grupo.indices.length - 1];
+            carrinho.splice(indexParaRemover, 1);
+            atualizarCarrinho();
+        }
 
         function removerCarrinho(index) {
-
+            if (!Number.isInteger(index) || index < 0 || index >= carrinho.length) return;
             carrinho.splice(index, 1);
-
             atualizarCarrinho();
         }
 
@@ -1964,16 +1938,16 @@ function comprarChave(nome, precoUnitario, tipo) {
     );
 }
 const quantidadesPacotes = {
-    maquinas: 5,
     shiny: 5
 };
 
 const precosPacotes = {
-    maquinas: 4.99,
     shiny: 2.99
 };
 
 function alterarPacote(tipo, valor) {
+
+    if (!Object.prototype.hasOwnProperty.call(quantidadesPacotes, tipo)) return;
 
     quantidadesPacotes[tipo] += valor * 5;
 
@@ -1982,33 +1956,33 @@ function alterarPacote(tipo, valor) {
     }
 
     const quantidade = quantidadesPacotes[tipo];
-
-    // Cada pacote possui 5 chaves
     const pacotes = quantidade / 5;
-
     const preco = precosPacotes[tipo] * pacotes;
 
-    document.getElementById(tipo + "-quantidade").textContent =
-        quantidade;
+    const quantidadeElement = document.getElementById(tipo + "-quantidade");
+    const precoElement = document.getElementById(tipo + "-preco");
 
-    document.getElementById(tipo + "-preco").textContent =
-        "R$ " + preco.toFixed(2).replace(".", ",");
+    if (quantidadeElement) {
+        quantidadeElement.textContent = quantidade;
+    }
+
+    if (precoElement) {
+        precoElement.textContent = "R$ " + formatarMoeda(preco);
+    }
 }
-
 
 function comprarPacote(nome, precoPacote, tipo) {
 
+    if (!Object.prototype.hasOwnProperty.call(quantidadesPacotes, tipo)) return;
+
     const quantidade = quantidadesPacotes[tipo];
-
     const pacotes = quantidade / 5;
-
     const precoTotal = precoPacote * pacotes;
 
     adicionarCarrinho(
         nome + " - " + quantidade + "x",
         precoTotal
     );
-
 }
 
 /* ========================================
@@ -2079,26 +2053,25 @@ function atualizarCheckout() {
     let subtotal = 0;
 
 
-    carrinho.forEach((item) => {
+    agruparCarrinho().forEach((item) => {
 
-        subtotal += item.preco;
+        subtotal += item.precoTotal;
 
         const div = document.createElement("div");
-
         div.className = "cart-item";
+
+        const quantidadeTexto = item.quantidade > 1
+            ? ` <small style="opacity:.75;">x${item.quantidade}</small>`
+            : "";
 
         div.innerHTML = `
             <div>
-                <strong>${item.nome}</strong>
-
-                <span>
-                    R$ ${item.preco.toFixed(2).replace(".", ",")}
-                </span>
+                <strong>${escaparHTML(item.nome)}${quantidadeTexto}</strong>
+                <span>R$ ${formatarMoeda(item.precoTotal)}</span>
             </div>
         `;
 
         checkoutItems.appendChild(div);
-
     });
 
 
@@ -2206,6 +2179,7 @@ function verificarCheckout() {
 
     botao.disabled = !(termos.checked && idade.checked);
 }
+
 function continuarPagamento() {
 
     console.log("✅ Continuar pagamento clicado!");
@@ -2236,15 +2210,11 @@ function continuarPagamento() {
     checkout.classList.remove("active");
     pagamento.classList.add("active");
 
-    setTimeout(() => {
-        gerarQRCodePix();
-    }, 100);
-
     console.log("✅ Pagamento aberto!");
 }
 
-    // Atualiza o resumo e o PIX
- function atualizarPagamento() {
+    // Atualiza o resumo do pagamento
+function atualizarPagamento() {
 
     const paymentItems =
         document.getElementById("payment-items");
@@ -2261,26 +2231,25 @@ function continuarPagamento() {
 
     let subtotal = 0;
 
-    carrinho.forEach((item) => {
+    agruparCarrinho().forEach((item) => {
 
-        subtotal += item.preco;
+        subtotal += item.precoTotal;
 
         const div = document.createElement("div");
-
         div.className = "cart-item";
+
+        const quantidadeTexto = item.quantidade > 1
+            ? ` <small style="opacity:.75;">x${item.quantidade}</small>`
+            : "";
 
         div.innerHTML = `
             <div>
-                <strong>${item.nome}</strong>
-
-                <span>
-                    R$ ${item.preco.toFixed(2).replace(".", ",")}
-                </span>
+                <strong>${escaparHTML(item.nome)}${quantidadeTexto}</strong>
+                <span>R$ ${formatarMoeda(item.precoTotal)}</span>
             </div>
         `;
 
         paymentItems.appendChild(div);
-
     });
 
 
@@ -2304,103 +2273,12 @@ function continuarPagamento() {
 
     // Mostra o total com desconto
 
-    paymentTotal.textContent =
-        "R$ " +
-        totalFinal.toFixed(2).replace(".", ",");
-
-
-    // Atualiza o PIX com o valor COM desconto
-
-    atualizarPix(totalFinal);
-}
-
-const CHAVE_PIX = "6ac81b2f-c009-471b-ae83-f2a00895c36e";
-function gerarCRC16(payload) {
-
-    let crc = 0xFFFF;
-
-    for (let i = 0; i < payload.length; i++) {
-
-        crc ^= payload.charCodeAt(i) << 8;
-
-        for (let j = 0; j < 8; j++) {
-
-            if ((crc & 0x8000) !== 0) {
-                crc = (crc << 1) ^ 0x1021;
-            } else {
-                crc = crc << 1;
-            }
-
-            crc &= 0xFFFF;
-        }
-    }
-
-    return crc.toString(16).toUpperCase().padStart(4, "0");
-}
-
-
-function campoPix(id, valor) {
-
-    return (
-        id +
-        String(valor.length).padStart(2, "0") +
-        valor
-    );
+paymentTotal.textContent =
+    "R$ " +
+    totalFinal.toFixed(2).replace(".", ",");
 
 }
-
-function gerarPayloadPix(valor) {
-
-    const valorFormatado = Number(valor).toFixed(2);
-
-    const merchantAccount =
-        campoPix("00", "br.gov.bcb.pix") +
-        campoPix("01", CHAVE_PIX);
-
-    const additionalData =
-        campoPix("05", "***");
-
-    const payloadSemCRC =
-
-        campoPix("00", "01") +
-
-        campoPix("26", merchantAccount) +
-
-        campoPix("52", "0000") +
-
-        campoPix("53", "986") +
-
-        campoPix("54", valorFormatado) +
-
-        campoPix("58", "BR") +
-
-        campoPix("59", "CELESTYS") +
-
-        campoPix("60", "SALVADOR") +
-
-        campoPix("62", additionalData) +
-
-        "6304";
-
-    const crc = gerarCRC16(payloadSemCRC);
-
-    return payloadSemCRC + crc;
-}
-
-function atualizarPix(valor) {
-
-    const valorPix = valor.toFixed(2);
-
-    const payloadPix = gerarPayloadPix(valorPix);
-
-    document.getElementById("pix-code").textContent =
-        payloadPix;
-
-    document.getElementById("pix-message").textContent =
-        "Valor do PIX: R$ " +
-        valorPix.replace(".", ",");
-}
-
+    
 function fecharPagamento() {
 
     document
@@ -2409,297 +2287,9 @@ function fecharPagamento() {
 
 }
 
-function gerarChave() {
 
-    const caracteres = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 
-    function bloco() {
 
-        let resultado = "";
-
-        for (let i = 0; i < 4; i++) {
-
-            resultado +=
-                caracteres.charAt(
-                    Math.floor(Math.random() * caracteres.length)
-                );
-
-        }
-
-        return resultado;
-    }
-
-    return "CEL-" + bloco() + "-" + bloco() + "-" + bloco();
-}
-
-function gerarIdPedido() {
-
-    const caracteres = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-
-    let resultado = "";
-
-    for (let i = 0; i < 10; i++) {
-
-        resultado += caracteres.charAt(
-            Math.floor(Math.random() * caracteres.length)
-        );
-
-    }
-
-    return "CEL-" + resultado;
-}
-
-async function confirmarPagamento() {
-
-    const nick = document
-        .getElementById("player-name")
-        .value
-        .trim();
-
-    if (nick === "") {
-        alert("🎮 Digite seu nick do servidor antes de continuar.");
-        return;
-    }
-
-    if (carrinho.length === 0) {
-        alert("🛒 Seu carrinho está vazio.");
-        return;
-    }
-
-    try {
-
-        console.log("💳 Criando pagamento no Mercado Pago...");
-
-        const resposta = await fetch(
-            "https://celestys-site-production.up.railway.app/criar-pagamento",
-            {
-                method: "POST",
-
-                headers: {
-                    "Content-Type": "application/json"
-                },
-
-                body: JSON.stringify({
-                    produtos: carrinho,
-                    nick: nick
-                })
-            }
-        );
-
-        const dados = await resposta.json();
-
-        if (!resposta.ok || !dados.sucesso) {
-
-            console.error("Erro do backend:", dados);
-
-            alert(
-                "❌ Não foi possível iniciar o pagamento.\n\n" +
-                (dados.erro || "Erro desconhecido.")
-            );
-
-            return;
-        }
-
-        console.log("✅ Pagamento criado:", dados);
-
-        window.location.href = dados.pagamento_url;
-
-    } catch (erro) {
-
-        console.error("❌ Erro ao conectar com o backend:", erro);
-
-        alert(
-            "❌ Não foi possível conectar ao servidor de pagamentos.\n\n" +
-            "Verifique se o backend está ligado."
-        );
-    }
-}
-function copiarChave() {
-
-    const chave = document
-        .getElementById("success-key")
-        .textContent
-        .trim();
-
-    if (!chave || chave === "---") {
-
-        alert("A chave ainda não foi gerada.");
-
-        return;
-    }
-
-    navigator.clipboard.writeText(chave);
-
-    alert("✅ Chave copiada!");
-}
-
-
-function fecharPedido() {
-
-    document
-        .getElementById("success-overlay")
-        .classList.remove("active");
-
-    carrinho = [];
-
-    atualizarCarrinho();
-
-    document.getElementById("player-name").value = "";
-
-}
-
-</script>
-
-<!-- PEDIDO CONCLUÍDO -->
-
-<div class="success-overlay" id="success-overlay">
-
-    <div class="success-box">
-
-        <div class="success-icon">
-            ✅
-        </div>
-
-        <h2>Pedido registrado!</h2>
-
-        <p class="success-subtitle">
-            Seu pedido foi criado com sucesso.
-        </p>
-
-        <div class="success-order">
-
-            <div class="success-row">
-                <span>📦 Pedido</span>
-                <strong id="success-order-id">---</strong>
-            </div>
-
-            <div class="success-row">
-                <span>🎮 Nick</span>
-                <strong id="success-nick">---</strong>
-            </div>
-
-            <div class="success-row">
-                <span>💰 Total</span>
-                <strong id="success-total">R$ 0,00</strong>
-            </div>
-
-            <div class="success-row">
-                <span>🟡 Status</span>
-                <strong>Aguardando pagamento</strong>
-            </div>
-
-        </div>
-
-        <div class="success-key">
-
-            <span>🔑 Sua chave</span>
-
-            <div class="key-display">
-
-                <strong id="success-key">
-                    ---
-                </strong>
-
-                <button
-                    type="button"
-                    onclick="copiarChave()"
-                >
-                    📋 Copiar
-                </button>
-
-            </div>
-
-            <small>
-                Guarde esta chave. Ela será utilizada
-                para resgatar seu produto no servidor.
-            </small>
-
-        </div>
-
-        <button
-            class="success-close-button"
-            type="button"
-            onclick="fecharPedido()"
-        >
-            🏠 Voltar para a loja
-        </button>
-
-    </div>
-
-</div>
-
-<script>
-
-function gerarQRCodePix() {
-
-    const pixElement =
-        document.getElementById("pix-code");
-
-    const qrContainer =
-        document.getElementById("pix-qrcode");
-
-    if (!pixElement || !qrContainer) {
-        console.error("❌ Elementos do QR Code não encontrados.");
-        return;
-    }
-
-    const pix =
-        pixElement.textContent.trim();
-
-    if (
-        pix === "" ||
-        pix === "PIX será gerado aqui"
-    ) {
-        console.error("❌ Código PIX vazio.");
-        return;
-    }
-
-    if (typeof QRCode === "undefined") {
-        console.error("❌ Biblioteca QRCode não carregada.");
-        return;
-    }
-
-    qrContainer.innerHTML = "";
-
-    new QRCode(qrContainer, {
-
-        text: pix,
-
-        width: 300,
-
-        height: 300,
-
-        correctLevel: QRCode.CorrectLevel.H
-
-    });
-
-    console.log("✅ QR Code PIX gerado!");
-    console.log("PIX:", pix);
-}
-
-function copiarPix() {
-
-    const pix = document
-        .getElementById("pix-code")
-        .textContent
-        .trim();
-
-    if (!pix || pix === "PIX será gerado aqui") {
-        alert("❌ O código PIX ainda não foi gerado.");
-        return;
-    }
-
-    navigator.clipboard.writeText(pix)
-        .then(() => {
-            alert("✅ PIX copiado!");
-        })
-        .catch(() => {
-            alert("❌ Não foi possível copiar o PIX.");
-        });
-}
-/* ========================================
-   BENEFÍCIOS DOS VIPs
-   ======================================== */
 
 function abrirBeneficios(vip) {
 
