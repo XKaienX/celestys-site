@@ -1224,8 +1224,25 @@ app.post("/webhook/mercadopago", async (req, res) => {
 
     try {
 
+        console.log("========================================");
+        console.log("🔔 WEBHOOK DO MERCADO PAGO RECEBIDO");
+        console.log("📦 Tipo:", req.body?.type);
+        console.log("🆔 Data ID:", req.query["data.id"]);
+        console.log("========================================");
+
         if (!webhookSecret) {
-            console.error("❌ Chave secreta do Webhook não configurada.");
+            console.error(
+                "❌ Chave secreta do Webhook não configurada."
+            );
+
+            return res.sendStatus(500);
+        }
+
+        if (!paymentClient) {
+            console.error(
+                "❌ Cliente do Mercado Pago não configurado."
+            );
+
             return res.sendStatus(500);
         }
 
@@ -1234,7 +1251,11 @@ app.post("/webhook/mercadopago", async (req, res) => {
         const dataId = req.query["data.id"];
 
         if (!xSignature || !xRequestId || !dataId) {
-            console.error("❌ Webhook recebido sem dados necessários.");
+
+            console.error(
+                "❌ Webhook recebido sem os dados necessários."
+            );
+
             return res.sendStatus(400);
         }
 
@@ -1243,22 +1264,27 @@ app.post("/webhook/mercadopago", async (req, res) => {
         // ========================================
 
         WebhookSignatureValidator.validate({
-            xSignature: xSignature,
-            xRequestId: xRequestId,
-            dataId: dataId,
+            xSignature,
+            xRequestId,
+            dataId,
             secret: webhookSecret
         });
 
         console.log("✅ Assinatura do Webhook válida!");
 
         // ========================================
-        // VERIFICAR TIPO DE NOTIFICAÇÃO
+        // VERIFICAR TIPO
         // ========================================
 
         const tipo = req.body?.type;
 
         if (tipo !== "payment") {
-            console.log("ℹ️ Webhook ignorado. Tipo:", tipo);
+
+            console.log(
+                "ℹ️ Webhook ignorado. Tipo:",
+                tipo
+            );
+
             return res.sendStatus(200);
         }
 
@@ -1266,260 +1292,355 @@ app.post("/webhook/mercadopago", async (req, res) => {
         // BUSCAR PAGAMENTO NO MERCADO PAGO
         // ========================================
 
-        let pagamento = null;
+        let pagamento;
 
-try {
+        try {
 
-    pagamento = await paymentClient.get({
-        id: dataId
-    });
+            pagamento = await paymentClient.get({
+                id: dataId
+            });
 
-} catch (erroPagamento) {
+        } catch (erroPagamento) {
 
-    console.log("⚠️ Não foi possível consultar o pagamento:", dataId);
-    console.log("ℹ️ Isso pode acontecer no teste com um ID fictício.");
+            console.error(
+                "❌ Erro ao consultar pagamento no Mercado Pago."
+            );
 
-    return res.sendStatus(200);
-}
+            console.error(
+                "🆔 Payment ID:",
+                dataId
+            );
+
+            console.error(erroPagamento);
+
+            return res.sendStatus(200);
+        }
 
         console.log("========================================");
-        console.log("🔔 NOTIFICAÇÃO DE PAGAMENTO");
-        console.log("💳 Payment ID:", pagamento.id);
+        console.log("💳 PAGAMENTO RECEBIDO");
+        console.log("🆔 Payment ID:", pagamento.id);
         console.log("📊 Status:", pagamento.status);
-        console.log("💰 Valor:", pagamento.transaction_amount);
-        console.log("🧾 Referência:", pagamento.external_reference);
+        console.log(
+            "💰 Valor:",
+            pagamento.transaction_amount
+        );
+        console.log(
+            "🧾 Referência:",
+            pagamento.external_reference
+        );
         console.log("========================================");
+
+        // ========================================
+        // LOCALIZAR PEDIDO
+        // ========================================
+
+        const referencia = String(
+            pagamento.external_reference || ""
+        ).trim();
+
+        if (!referencia) {
+
+            console.error(
+                "❌ Pagamento sem external_reference."
+            );
+
+            return res.sendStatus(200);
+        }
+
+        const pedidoResult = await db.query(
+            `
+            SELECT *
+            FROM pedidos
+            WHERE external_reference = $1
+            LIMIT 1
+            `,
+            [referencia]
+        );
+
+        if (pedidoResult.rowCount === 0) {
+
+            console.error(
+                "❌ Pedido não encontrado no banco."
+            );
+
+            console.error(
+                "🧾 Referência:",
+                referencia
+            );
+
+            return res.sendStatus(200);
+        }
+
+        const pedido = pedidoResult.rows[0];
+
+        console.log(
+            "🔎 Pedido encontrado:",
+            pedido.id
+        );
+
+        console.log(
+            "🎮 Nick:",
+            pedido.nick
+        );
+
+        // ========================================
+        // EVITAR PAGAMENTO DUPLICADO
+        // ========================================
+
+        if (pedido.payment_id) {
+
+            if (
+                String(pedido.payment_id) ===
+                String(pagamento.id)
+            ) {
+
+                console.log(
+                    "ℹ️ Pagamento já processado."
+                );
+
+                return res.sendStatus(200);
+            }
+
+            console.error(
+                "🚨 Pedido já possui outro Payment ID."
+            );
+
+            return res.sendStatus(200);
+        }
+
+        // ========================================
+        // VERIFICAR VALOR
+        // ========================================
+
+        const valorPago = Number(
+            Number(
+                pagamento.transaction_amount
+            ).toFixed(2)
+        );
+
+        const valorPedido = Number(
+            Number(
+                pedido.valor_final
+            ).toFixed(2)
+        );
+
+        console.log(
+            "💰 Valor esperado:",
+            valorPedido
+        );
+
+        console.log(
+            "💳 Valor recebido:",
+            valorPago
+        );
+
+        if (valorPago !== valorPedido) {
+
+            console.error(
+                "🚨 VALOR DO PAGAMENTO NÃO CONFERE!"
+            );
+
+            console.error(
+                "🧾 Referência:",
+                referencia
+            );
+
+            return res.sendStatus(200);
+        }
+
+        console.log(
+            "✅ Valor do pagamento confirmado!"
+        );
+
+        // ========================================
+        // PAGAMENTO AINDA NÃO FOI APROVADO
+        // ========================================
+
+        if (pagamento.status !== "approved") {
+
+            await db.query(
+                `
+                UPDATE pedidos
+                SET
+                    status = $1,
+                    updated_at = NOW()
+                WHERE external_reference = $2
+                AND payment_id IS NULL
+                `,
+                [
+                    String(pagamento.status),
+                    referencia
+                ]
+            );
+
+            console.log(
+                "🗄️ Status do pedido atualizado:"
+            );
+
+            console.log(
+                "📊 Status:",
+                pagamento.status
+            );
+
+            return res.sendStatus(200);
+        }
 
         // ========================================
         // PAGAMENTO APROVADO
         // ========================================
 
-// ========================================
-// LOCALIZAR PEDIDO NO BANCO
-// ========================================
-
-const referencia = pagamento.external_reference;
-
-if (!referencia) {
-
-    console.error("❌ Pagamento sem referência externa.");
-
-    return res.sendStatus(200);
-}
-
-const pedidoResult = await db.query(
-    `
-    SELECT *
-    FROM pedidos
-    WHERE external_reference = $1
-    LIMIT 1
-    `,
-    [referencia]
-);
-
-if (pedidoResult.rowCount === 0) {
-
-    console.error("❌ Pedido não encontrado no banco.");
-    console.error("🧾 Referência:", referencia);
-
-    return res.sendStatus(200);
-}
-
-const pedido = pedidoResult.rows[0];
-
-// ========================================
-// PROTEGER CONTRA PAGAMENTO DUPLICADO
-// ========================================
-
-if (pedido.payment_id) {
-    if (String(pedido.payment_id) === String(pagamento.id)) {
-        console.log("ℹ️ Pagamento já foi processado anteriormente.");
-        console.log("💳 Payment ID:", pagamento.id);
-        return res.sendStatus(200);
-    }
-
-    console.error("🚨 PEDIDO JÁ POSSUI OUTRO PAYMENT ID!");
-    console.error("🧾 Referência:", referencia);
-    console.error("💳 Payment ID salvo:", pedido.payment_id);
-    console.error("💳 Payment ID recebido:", pagamento.id);
-
-    return res.sendStatus(200);
-}
-
-console.log("✅ Pagamento ainda não foi processado.");
-
-// ========================================
-// VERIFICAR NICK DO PEDIDO
-// ========================================
-
-const nickPagamento = String(
-    pagamento.metadata?.nick || ""
-).trim();
-
-const nickPedido = String(
-    pedido.nick || ""
-).trim();
-
-if (!nickPagamento) {
-    console.error("🚨 PAGAMENTO SEM NICK!");
-    console.error("🧾 Referência:", referencia);
-    return res.sendStatus(200);
-}
-
-if (nickPagamento !== nickPedido) {
-    console.error("🚨 NICK DO PAGAMENTO NÃO CONFERE!");
-    console.error("🧾 Referência:", referencia);
-    console.error("🎮 Nick esperado:", nickPedido);
-    console.error("🎮 Nick recebido:", nickPagamento);
-
-    return res.sendStatus(200);
-}
-
-console.log("✅ Nick do pagamento confirmado!");
-console.log("🎮 Nick:", nickPagamento);
-
-// ========================================
-// VERIFICAR VALOR DO PAGAMENTO
-// ========================================
-
-const valorPago = Number(
-    Number(pagamento.transaction_amount).toFixed(2)
-);
-
-const valorPedido = Number(
-    Number(pedido.valor_final).toFixed(2)
-);
-
-if (valorPago !== valorPedido) {
-
-    console.error("🚨 VALOR DO PAGAMENTO NÃO CONFERE!");
-    console.error("🧾 Referência:", referencia);
-    console.error("💰 Valor esperado:", valorPedido);
-    console.error("💳 Valor recebido:", valorPago);
-
-    return res.sendStatus(200);
-}
-
-console.log("✅ Valor do pagamento confirmado!");
-console.log("💰 Valor:", valorPago);
-
-// ========================================
-// ATUALIZAR STATUS DO PEDIDO
-// ========================================
-
-if (pagamento.status !== "approved") {
-
-    await db.query(
-        `
-        UPDATE pedidos
-        SET
-            status = $1,
-            updated_at = NOW()
-        WHERE external_reference = $2
-        `,
-        [
-            String(pagamento.status),
-            referencia
-        ]
-    );
-
-    console.log("🗄️ Status do pedido atualizado!");
-    console.log("🧾 Referência:", referencia);
-    console.log("📊 Status:", pagamento.status);
-
-    return res.sendStatus(200);
-}
-
-      if (pagamento.status === "approved") {
-
-    console.log("🎉 PAGAMENTO APROVADO!");
-    console.log("🎮 Nick:", pagamento.metadata?.nick);
-
-    // ========================================
-    // ATUALIZAR PEDIDO NO BANCO
-    // ========================================
-
-    const resultadoPedido = await db.query(
-        `
-        UPDATE pedidos
-        SET
-            payment_id = $1,
-            status = $2,
-            entrega_status = $3,
-            entregue = $4,
-            updated_at = NOW()
-        WHERE external_reference = $5
-        AND payment_id IS NULL
-        RETURNING id, nick, valor_final, cupom
-        `,
-        [
-            String(pagamento.id),
-            "approved",
-            "pendente",
-            false,
-            referencia
-        ]
-    );
-
-    if (resultadoPedido.rowCount === 0) {
-
-        console.error(
-            "❌ Pedido não encontrado ou pagamento já processado."
+        console.log(
+            "🎉 PAGAMENTO APROVADO!"
         );
 
-        console.error(
-            "🧾 Referência:",
-            referencia
+        console.log(
+            "🆔 Payment ID:",
+            pagamento.id
         );
 
-    } else {
+        console.log(
+            "🎮 Nick:",
+            pedido.nick
+        );
 
-        const pedido = resultadoPedido.rows[0];
+        // ========================================
+        // ATUALIZAR PEDIDO
+        // ========================================
 
-        console.log("🗄️ Pedido atualizado no banco!");
-        console.log("🆔 Pedido ID:", pedido.id);
-        console.log("🎮 Nick:", pedido.nick);
-        console.log("💰 Valor:", pedido.valor_final);
-        console.log("📦 Entrega: pendente");
+        const resultadoPedido = await db.query(
+            `
+            UPDATE pedidos
+            SET
+                payment_id = $1,
+                status = 'approved',
+                entrega_status = 'pendente',
+                entregue = FALSE,
+                discord_notificado = FALSE,
+                updated_at = NOW()
+            WHERE external_reference = $2
+            AND payment_id IS NULL
+            RETURNING
+                id,
+                nick,
+                valor_final,
+                cupom
+            `,
+            [
+                String(pagamento.id),
+                referencia
+            ]
+        );
+
+        if (resultadoPedido.rowCount === 0) {
+
+            console.error(
+                "❌ Pedido não foi atualizado."
+            );
+
+            console.error(
+                "🧾 Referência:",
+                referencia
+            );
+
+            return res.sendStatus(200);
+        }
+
+        const pedidoAtualizado =
+            resultadoPedido.rows[0];
+
+        console.log(
+            "========================================"
+        );
+
+        console.log(
+            "🗄️ PEDIDO ATUALIZADO COM SUCESSO!"
+        );
+
+        console.log(
+            "🆔 Pedido:",
+            pedidoAtualizado.id
+        );
+
+        console.log(
+            "🎮 Nick:",
+            pedidoAtualizado.nick
+        );
+
+        console.log(
+            "💰 Valor:",
+            pedidoAtualizado.valor_final
+        );
+
+        console.log(
+            "💳 Payment ID:",
+            pagamento.id
+        );
+
+        console.log(
+            "📊 Status: approved"
+        );
+
+        console.log(
+            "📦 Entrega: pendente"
+        );
+
+        console.log(
+            "========================================"
+        );
 
         // ========================================
         // REGISTRAR USO DO CUPOM
         // ========================================
 
-        if (pedido.cupom) {
+        if (pedidoAtualizado.cupom) {
 
             await db.query(
                 `
                 UPDATE cupons
-                SET usos_realizados = usos_realizados + 1
+                SET
+                    usos_realizados =
+                    usos_realizados + 1
                 WHERE codigo = $1
                 `,
-                [pedido.cupom]
+                [
+                    pedidoAtualizado.cupom
+                ]
             );
 
-            console.log("🎟️ Uso do cupom registrado!");
-            console.log("🏷️ Cupom:", pedido.cupom);
-        }
-    }
-}
+            console.log(
+                "🎟️ Uso do cupom registrado!"
+            );
 
-return res.sendStatus(200);
+            console.log(
+                "🏷️ Cupom:",
+                pedidoAtualizado.cupom
+            );
+        }
+
+        return res.sendStatus(200);
 
     } catch (error) {
 
-        if (error instanceof InvalidWebhookSignatureError) {
+        if (
+            error instanceof
+            InvalidWebhookSignatureError
+        ) {
 
-            console.error("❌ Assinatura do Webhook inválida!");
+            console.error(
+                "❌ Assinatura do Webhook inválida!"
+            );
 
             return res.sendStatus(401);
         }
 
-        console.error("❌ Erro no Webhook:");
+        console.error(
+            "❌ ERRO NO WEBHOOK DO MERCADO PAGO"
+        );
+
         console.error(error);
 
         return res.sendStatus(500);
     }
-
 });
 
 // ========================================
