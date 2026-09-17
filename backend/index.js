@@ -1000,7 +1000,7 @@ console.log("🆔 Pedido ID:", pedidoId);
 
             preference_id: preference.id,
 
-            pagamento_url: preference.init_point,
+            init_point: preference.init_point,
 
             referencia: referencia
 
