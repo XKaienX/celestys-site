@@ -357,10 +357,16 @@ app.get("/compras-pendentes", async (req, res) => {
 
     try {
 
+        console.log("========================================");
+        console.log("🔎 VERIFICANDO COMPRAS PARA O DISCORD");
+
         const resultado = await db.query(`
             SELECT
                 p.id,
                 p.nick,
+                p.status,
+                p.discord_notificado,
+                p.entrega_status,
                 p.valor_final,
                 p.cupom,
                 p.created_at,
@@ -373,6 +379,16 @@ app.get("/compras-pendentes", async (req, res) => {
               AND p.discord_notificado = FALSE
             ORDER BY p.created_at ASC
         `);
+
+        console.log("📊 Compras encontradas:", resultado.rows.length);
+
+        for (const compra of resultado.rows) {
+            console.log(
+                `🛒 Pedido #${compra.id} | Nick: ${compra.nick} | Produto: ${compra.produto_nome} | Status: ${compra.status} | Discord avisado: ${compra.discord_notificado}`
+            );
+        }
+
+        console.log("========================================");
 
         return res.json({
             sucesso: true,
