@@ -2296,17 +2296,96 @@ paymentTotal.textContent =
 
 }
     
-function fecharPagamento() {
+async function confirmarPagamento() {
 
-    document
-        .getElementById("payment-overlay")
-        .classList.remove("active");
+    if (carrinho.length === 0) {
+        alert("❌ Seu carrinho está vazio.");
+        return;
+    }
 
+    const nickInput = document.getElementById("player-name");
+
+    if (!nickInput) {
+        alert("❌ Campo de nick não encontrado.");
+        return;
+    }
+
+    const nick = nickInput.value.trim();
+
+    if (!nick) {
+        alert("🎮 Digite seu nick do Minecraft.");
+        nickInput.focus();
+        return;
+    }
+
+    if (nick.length > 32) {
+        alert("❌ Seu nick pode ter no máximo 32 caracteres.");
+        return;
+    }
+
+    const produtos = carrinho.map((item) => ({
+        nome: item.nome,
+        preco: Number(item.preco)
+    }));
+
+    const botao = document.querySelector(".payment-confirm-button");
+
+    if (botao) {
+        botao.disabled = true;
+        botao.textContent = "⏳ Criando pagamento...";
+    }
+
+    try {
+
+        const resposta = await fetch(
+            "https://celestys-site-production.up.railway.app/criar-pagamento",
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    produtos: produtos,
+                    nick: nick,
+                    cupom: cupomAplicado
+                })
+            }
+        );
+
+        const dados = await resposta.json();
+
+        if (!resposta.ok || !dados.sucesso) {
+            throw new Error(
+                dados.erro || "Não foi possível criar o pagamento."
+            );
+        }
+
+        if (!dados.init_point) {
+            throw new Error(
+                "O Mercado Pago não retornou o link de pagamento."
+            );
+        }
+
+        console.log("✅ Pagamento criado com sucesso.");
+        console.log("🆔 Preferência:", dados.preference_id);
+
+        window.location.href = dados.init_point;
+
+    } catch (error) {
+
+        console.error("❌ Erro ao criar pagamento:", error);
+
+        alert(
+            "❌ Não foi possível iniciar o pagamento.\n\n" +
+            error.message
+        );
+
+        if (botao) {
+            botao.disabled = false;
+            botao.textContent = "💳 Ir para o Mercado Pago";
+        }
+    }
 }
-
-
-
-
 
 function abrirBeneficios(vip) {
 
