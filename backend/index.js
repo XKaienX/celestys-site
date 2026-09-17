@@ -56,6 +56,8 @@ async function inicializarBanco() {
 
                 entregue BOOLEAN NOT NULL DEFAULT FALSE,
 
+                discord_notificado BOOLEAN NOT NULL DEFAULT FALSE,
+
                 created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 
                 updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
@@ -155,6 +157,7 @@ let paymentClient = null;
 
 const accessToken = process.env.MERCADOPAGO_ACCESS_TOKEN;
 const webhookSecret = process.env.MERCADOPAGO_WEBHOOK_SECRET;
+const minecraftApiKey = process.env.MINECRAFT_API_KEY;
 
 const tokenValido = Boolean(accessToken);
 
@@ -202,6 +205,260 @@ app.get("/mercadopago-status", (req, res) => {
 });
 
 // ========================================
+// COMANDOS DE ENTREGA MINECRAFT
+// ========================================
+
+const COMANDOS_ENTREGA = {
+
+    // VIPs
+    "VIP Trainer": (nick, quantidade) =>
+        `/ftbranks add ${nick} viptrainer`,
+
+    "VIP Elite": (nick, quantidade) =>
+        `/ftbranks add ${nick} vipelite`,
+
+    "VIP Champion": (nick, quantidade) =>
+        `/ftbranks add ${nick} vipchampion`,
+
+    "VIP Master": (nick, quantidade) =>
+        `/ftbranks add ${nick} vipmaster`,
+
+    // Chaves lendárias
+    "Chave de Lendário - 1ª Geração": (nick, quantidade) =>
+        `/crate_admin givekey ${nick} ${quantidade} Caixa Lendária G1`,
+
+    "Chave de Lendário - 2ª Geração": (nick, quantidade) =>
+        `/crate_admin givekey ${nick} ${quantidade} Caixa Lendária G2`,
+
+    "Chave de Lendário - 3ª Geração": (nick, quantidade) =>
+        `/crate_admin givekey ${nick} ${quantidade} Caixa Lendária G3`,
+
+    "Chave de Lendário - 4ª Geração": (nick, quantidade) =>
+        `/crate_admin givekey ${nick} ${quantidade} Caixa Lendária G4`,
+
+    "Chave de Lendário - 5ª Geração": (nick, quantidade) =>
+        `/crate_admin givekey ${nick} ${quantidade} Caixa Lendária G5`,
+
+    "Chave de Lendário - 6ª Geração": (nick, quantidade) =>
+        `/crate_admin givekey ${nick} ${quantidade} Caixa Lendária G6`,
+
+    "Chave de Lendário - 8ª Geração": (nick, quantidade) =>
+        `/crate_admin givekey ${nick} ${quantidade} Caixa Lendária G8`,
+
+    "Chave de Lendário - 9ª Geração": (nick, quantidade) =>
+        `/crate_admin givekey ${nick} ${quantidade} Caixa Lendária G9`,
+
+    // Outras chaves
+    "Chave de Paradox": (nick, quantidade) =>
+        `/crate_admin givekey ${nick} ${quantidade} Caixa Paradox`,
+
+    "Chave de Ultra Beast": (nick, quantidade) =>
+        `/crate_admin givekey ${nick} ${quantidade} Caixa Ultra Beast`,
+
+    // Pacote de Shiny
+    "Chaves de Shiny": (nick, quantidade) =>
+        `/crate_admin givekey ${nick} ${quantidade} Caixa Shiny`
+
+};
+
+// ========================================
+// ENTREGAS PENDENTES
+// ========================================
+
+app.get("/entregas-pendentes/:nick", async (req, res) => {
+
+    const apiKey = req.headers["x-api-key"];
+
+if (!minecraftApiKey || apiKey !== minecraftApiKey) {
+    return res.status(401).json({
+        sucesso: false,
+        erro: "Acesso não autorizado."
+    });
+}
+
+try {
+
+        const nick = String(req.params.nick || "").trim();
+
+        if (!nick) {
+            return res.status(400).json({
+                sucesso: false,
+                erro: "Nick não informado."
+            });
+        }
+
+        const resultado = await db.query(
+            `
+            SELECT
+                p.id AS pedido_id,
+                p.nick,
+                p.status,
+                p.entrega_status,
+                pi.id AS item_id,
+                pi.produto_nome,
+                pi.quantidade
+            FROM pedidos p
+            INNER JOIN pedido_itens pi
+                ON pi.pedido_id = p.id
+            WHERE p.nick = $1
+              AND p.status = 'approved'
+              AND pi.entregue = FALSE
+              AND p.entrega_status <> 'entregue'
+            ORDER BY p.created_at ASC
+            `,
+            [nick]
+        );
+
+        return res.json({
+    sucesso: true,
+    entregas: resultado.rows.map((item) => ({
+        item_id: item.item_id,
+        pedido_id: item.pedido_id,
+        nick: item.nick,
+        produto_nome: item.produto_nome,
+        quantidade: item.quantidade,
+        comando: COMANDOS_ENTREGA[item.produto_nome]
+            ? COMANDOS_ENTREGA[item.produto_nome](
+                item.nick,
+                item.quantidade
+            )
+            : null
+    }))
+});
+
+    } catch (error) {
+
+        console.error("❌ Erro ao buscar entregas pendentes:");
+        console.error(error);
+
+        return res.status(500).json({
+            sucesso: false,
+            erro: "Não foi possível buscar as entregas."
+        });
+
+    }
+
+});
+
+// ========================================
+// COMPRAS PENDENTES PARA O DISCORD
+// ========================================
+
+app.get("/compras-pendentes", async (req, res) => {
+
+    const apiKey = req.headers["x-api-key"];
+
+    if (!minecraftApiKey || apiKey !== minecraftApiKey) {
+        return res.status(401).json({
+            sucesso: false,
+            erro: "Acesso não autorizado."
+        });
+    }
+
+    try {
+
+        const resultado = await db.query(`
+            SELECT
+                p.id,
+                p.nick,
+                p.valor_final,
+                p.cupom,
+                p.created_at,
+                pi.produto_nome,
+                pi.quantidade
+            FROM pedidos p
+            INNER JOIN pedido_itens pi
+                ON pi.pedido_id = p.id
+            WHERE p.status = 'approved'
+              AND p.discord_notificado = FALSE
+            ORDER BY p.created_at ASC
+        `);
+
+        return res.json({
+            sucesso: true,
+            compras: resultado.rows
+        });
+
+    } catch (error) {
+
+        console.error("❌ Erro ao buscar compras pendentes para o Discord:");
+        console.error(error);
+
+        return res.status(500).json({
+            sucesso: false,
+            erro: "Não foi possível buscar as compras."
+        });
+
+    }
+
+});
+
+// ========================================
+// MARCAR COMPRA COMO AVISADA NO DISCORD
+// ========================================
+
+app.post("/compras/:id/notificado", async (req, res) => {
+
+    const apiKey = req.headers["x-api-key"];
+
+    if (!minecraftApiKey || apiKey !== minecraftApiKey) {
+        return res.status(401).json({
+            sucesso: false,
+            erro: "Acesso não autorizado."
+        });
+    }
+
+    try {
+
+        const pedidoId = Number(req.params.id);
+
+        if (!pedidoId) {
+            return res.status(400).json({
+                sucesso: false,
+                erro: "ID do pedido inválido."
+            });
+        }
+
+        const resultado = await db.query(
+            `
+            UPDATE pedidos
+            SET
+                discord_notificado = TRUE,
+                updated_at = NOW()
+            WHERE id = $1
+            RETURNING id
+            `,
+            [pedidoId]
+        );
+
+        if (resultado.rowCount === 0) {
+            return res.status(404).json({
+                sucesso: false,
+                erro: "Pedido não encontrado."
+            });
+        }
+
+        return res.json({
+            sucesso: true,
+            mensagem: "Compra marcada como avisada.",
+            pedido_id: resultado.rows[0].id
+        });
+
+    } catch (error) {
+
+        console.error("❌ Erro ao marcar compra como avisada:");
+        console.error(error);
+
+        return res.status(500).json({
+            sucesso: false,
+            erro: "Não foi possível atualizar o pedido."
+        });
+
+    }
+
+});
+
+// ========================================
 // CATÁLOGO OFICIAL DA LOJA
 // ========================================
 
@@ -228,7 +485,6 @@ const CATALOGO = {
     "Chave de Ultra Beast": 18.99,
 
     // Pacotes
-    "Chaves de Máquinas": 4.99,
     "Chaves de Shiny": 2.99
 
 };
@@ -473,7 +729,6 @@ const items = produtos.map((produto) => {
     // ========================================
 
     if (
-        nomeBase === "Chaves de Máquinas" ||
         nomeBase === "Chaves de Shiny"
     ) {
 
@@ -764,6 +1019,146 @@ console.log("🆔 Pedido ID:", pedidoId);
 
             erro: "Não foi possível criar o pagamento."
 
+        });
+
+    }
+
+});
+
+// ========================================
+// CONFIRMAR ENTREGA
+// ========================================
+
+app.post("/confirmar-entrega", async (req, res) => {
+
+    const apiKey = req.headers["x-api-key"];
+
+if (!minecraftApiKey || apiKey !== minecraftApiKey) {
+    return res.status(401).json({
+        sucesso: false,
+        erro: "Acesso não autorizado."
+    });
+}
+
+try {
+
+        const { item_id, nick } = req.body;
+
+        if (!item_id || !nick) {
+            return res.status(400).json({
+                sucesso: false,
+                erro: "Item ou nick não informado."
+            });
+        }
+
+        const resultado = await db.query(
+            `
+            UPDATE pedido_itens pi
+            SET
+                entregue = TRUE,
+                entregue_em = NOW()
+            FROM pedidos p
+            WHERE pi.id = $1
+              AND pi.pedido_id = p.id
+              AND p.nick = $2
+              AND p.status = 'approved'
+              AND pi.entregue = FALSE
+            RETURNING pi.id, pi.produto_nome, pi.quantidade
+            `,
+            [item_id, String(nick).trim()]
+        );
+
+        if (resultado.rowCount === 0) {
+            return res.status(404).json({
+                sucesso: false,
+                erro: "Item não encontrado ou já entregue."
+            });
+        }
+
+        // Verificar se todos os itens do pedido foram entregues
+
+        const item = resultado.rows[0];
+
+        const pedidoResult = await db.query(
+            `
+            SELECT pedido_id
+            FROM pedido_itens
+            WHERE id = $1
+            LIMIT 1
+            `,
+            [item.id]
+        );
+
+        const pedidoId = pedidoResult.rows[0]?.pedido_id;
+
+        if (pedidoId) {
+
+            const pendentesResult = await db.query(
+                `
+                SELECT COUNT(*) AS quantidade
+                FROM pedido_itens
+                WHERE pedido_id = $1
+                  AND entregue = FALSE
+                `,
+                [pedidoId]
+            );
+
+            const pendentes = Number(
+                pendentesResult.rows[0].quantidade
+            );
+
+            if (pendentes === 0) {
+
+                await db.query(
+                    `
+                    UPDATE pedidos
+                    SET
+                        entrega_status = 'entregue',
+                        entregue = TRUE,
+                        updated_at = NOW()
+                    WHERE id = $1
+                    `,
+                    [pedidoId]
+                );
+
+            } else {
+
+                await db.query(
+                    `
+                    UPDATE pedidos
+                    SET
+                        entrega_status = 'parcial',
+                        entregue = FALSE,
+                        updated_at = NOW()
+                    WHERE id = $1
+                    `,
+                    [pedidoId]
+                );
+
+            }
+
+        }
+
+        console.log("📦 ITEM ENTREGUE!");
+        console.log("🆔 Item:", item.id);
+        console.log("🎮 Nick:", nick);
+        console.log("📦 Produto:", item.produto_nome);
+        console.log("🔢 Quantidade:", item.quantidade);
+
+        return res.json({
+            sucesso: true,
+            mensagem: "Entrega confirmada.",
+            item: item
+        });
+
+    } catch (error) {
+
+        console.error("❌ Erro ao confirmar entrega:");
+        console.error(error);
+
+        return res.status(500).json({
+            sucesso: false,
+            erro: "Não foi possível confirmar a entrega."
         });
 
     }
